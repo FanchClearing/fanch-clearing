@@ -200,3 +200,40 @@ export function useBattlePhase(gameId) {
 
   return { phase, battle, now, objectionCount, objectionLeftMs };
 }
+
+// -------------------------------------------------------------------- shakes
+
+export const SCORE_FLUSH_MS = 300;
+
+/** 내 점수만 쓴다: shakes/{battleId}/{uid} */
+export function setMyShake(gameId, battleId, uid, data) {
+  if (!db) return Promise.reject(new Error('서버 연결 없음'));
+  return set(ref(db, `${shakesPath(gameId)}/${battleId}/${uid}`), data);
+}
+
+/** cb({ [uid]: {team, nickname, count} }) */
+export function subscribeShakes(gameId, battleId, cb) {
+  if (!db || !battleId) {
+    cb({});
+    return () => {};
+  }
+  return onValue(
+    ref(db, `${shakesPath(gameId)}/${battleId}`),
+    (snap) => cb(snap.val() || {}),
+    (e) => console.error('shakes 구독 실패', e)
+  );
+}
+
+/** 팀별 합계 { [teamId]: n } 와 참가자 목록(count 내림차순) */
+export function useShakeScores(gameId, battleId) {
+  const [shakes, setShakes] = useState({});
+  useEffect(() => subscribeShakes(gameId, battleId, setShakes), [gameId, battleId]);
+
+  const totals = {};
+  const list = Object.entries(shakes).map(([uid, s]) => {
+    totals[s.team] = (totals[s.team] || 0) + (s.count || 0);
+    return { uid, ...s };
+  });
+  list.sort((a, b) => (b.count || 0) - (a.count || 0));
+  return { totals, list };
+}
