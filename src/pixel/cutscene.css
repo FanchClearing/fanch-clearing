@@ -1,0 +1,59 @@
+.cutscene.fullscreen {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: min(100vw, 430px);
+  transform: translateX(-50%);
+  z-index: 20;
+  background: #000;
+  overflow: hidden;
+}
+
+.cutscene.inline {
+  height: 78vh;
+  aspect-ratio: 160 / 284;
+  margin: 16px auto 0;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+.cutscene-box { position: relative; width: 100%; height: 100%; }
+
+.cutscene-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  display: block;
+}
+
+.cut-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  text-align: center;
+  font-size: 24px;
+  text-shadow: 3px 3px 0 #000;
+}
+
+.cut-start {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  color: var(--accent);
+  text-shadow: 4px 4px 0 #b13e53, 8px 8px 0 #000;
+  animation: pop 0.25s steps(4) both;
+}
+
+@keyframes pop {
+  from { transform: scale(0.2); }
+  to { transform: scale(1); }
+}
+
+.cut-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }

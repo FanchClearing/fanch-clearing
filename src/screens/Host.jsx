@@ -13,6 +13,7 @@ import {
   usePresenceCounts,
   useShakeScores,
 } from '../lib/room.js';
+import Cutscene from '../pixel/Cutscene.jsx';
 import Result from './Result.jsx';
 import './room.css';
 import './battle.css';
@@ -108,7 +109,9 @@ export default function Host() {
         </div>
       )}
 
-      {phase === 'cutscene' && <p className="host-big">컷신 {secLeft(battle.startAt - now)}</p>}
+      {phase === 'cutscene' && (
+        <Cutscene game={game} team={aId} battle={battle} fullscreen={false} />
+      )}
 
       {phase === 'battle' && (
         <div className="host-battle">

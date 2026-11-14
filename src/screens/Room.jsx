@@ -16,6 +16,7 @@ import {
   useShakeScores,
 } from '../lib/room.js';
 import Stadium from '../pixel/Stadium.jsx';
+import Cutscene from '../pixel/Cutscene.jsx';
 import Battle from './Battle.jsx';
 import Result from './Result.jsx';
 import './room.css';
@@ -152,8 +153,7 @@ export default function Room() {
         </div>
       )}
 
-      {/* T4 임시 화면: 컷신은 T9에서 교체 */}
-      {phase === 'cutscene' && <p className="temp">컷신 {secLeft(battle.startAt - now)}</p>}
+      {phase === 'cutscene' && <Cutscene game={game} team={team} battle={battle} />}
       {phase === 'battle' && (
         <Battle
           game={game}
