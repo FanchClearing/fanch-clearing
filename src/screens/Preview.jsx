@@ -37,6 +37,7 @@ export function PreviewCheer() {
         game={game}
         team="lg"
         totals={{ lg: count, hh: opp }}
+        counts={{ total: 21, lg: 12, hh: 9 }}
         myCount={count}
         sensorOk={false}
         onTap={() => setCount((n) => n + 1)}

@@ -6,8 +6,8 @@ const safe = (c) => (c === '#131230' ? '#ffffff' : c);
 
 // 평소 응원 화면 (경기 진행 중, 배틀이 아닐 때).
 // 야구장 배경이 잘 보이도록 위(점수 바)와 아래(이의 있음)만 패널로 쓰고 가운데는 비워 둔다.
-// 흔들거나 누를 때마다 하트·야구공·응원봉이 떠오른다. 인원수는 보여주지 않는다.
-export default function Cheer({ game, team, totals, myCount, sensorOk, onTap, objection }) {
+// 흔들거나 누를 때마다 하트·야구공·응원봉이 떠오른다. 참여 인원(운영자 가감 반영)을 ● LIVE로 보여 준다.
+export default function Cheer({ game, team, totals, counts = {}, myCount, sensorOk, onTap, objection }) {
   const [aId, bId] = Object.keys(game.teams);
   const A = game.teams[aId];
   const B = game.teams[bId];
@@ -22,6 +22,14 @@ export default function Cheer({ game, team, totals, myCount, sensorOk, onTap, ob
           <div className="cheer-top">
             <div className="cheer-badge">응원 중</div>
             <PushBar scoreA={a} scoreB={b} colorA={A.color} colorB={B.color} height={28} />
+            <div className="cheer-people">
+              <span className="live-dot" />
+              <b>LIVE</b>
+              <span>팬 {counts.total || 0}명 참여</span>
+              <span className="cheer-people-teams">
+                A {counts[aId] || 0} · B {counts[bId] || 0}
+              </span>
+            </div>
             <div className="cheer-totals">
               <span style={{ color: safe(A.color) }}>
                 A {A.name} {a}

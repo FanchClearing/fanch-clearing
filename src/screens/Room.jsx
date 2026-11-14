@@ -14,6 +14,7 @@ import {
   addObjection,
   joinRoom,
   setMyCheer,
+  usePresenceCounts,
   setMyShake,
   useBattlePhase,
   useCheerScores,
@@ -44,6 +45,7 @@ export default function Room() {
   const battleId = battle && battle.state === 'cutscene' ? battle.id : null;
   const { totals, list } = useShakeScores(gameId, battleId); // 배틀 점수
   const { totals: cheerTotals, list: cheerList } = useCheerScores(gameId, runId); // 평소 응원 점수
+  const counts = usePresenceCounts(gameId); // 참여 인원 (운영자 가감 반영)
 
   const [sensor, setSensor] = useState('off'); // off | ready | denied | none
   const [myCount, setMyCount] = useState(0); // 내 배틀 점수
@@ -267,6 +269,7 @@ export default function Room() {
           game={game}
           team={team}
           totals={cheerTotals}
+          counts={counts}
           myCount={myCheerCount}
           sensorOk={sensor === 'ready'}
           onTap={addShake}
