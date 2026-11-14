@@ -76,30 +76,40 @@ function drawCloseup(ctx, color, sub, blink, t) {
     R(14, 31, 4, 1, dark);
     R(22, 31, 4, 1, dark);
   } else {
-    R(14, 30, 4, 2, '#f4f4f4');
-    R(22, 30, 4, 2, '#f4f4f4');
-    R(16, 30, 2, 2, dark);
-    R(22, 30, 2, 2, dark);
+    // 반쯤 감긴 눈꺼풀로 내려다보는 거만한 눈
+    R(14, 31, 4, 1, '#f4f4f4');
+    R(22, 31, 4, 1, '#f4f4f4');
+    R(16, 31, 2, 1, dark);
+    R(22, 31, 2, 1, dark);
+    R(14, 30, 4, 1, shade(skin, -45)); // 눈꺼풀
+    R(22, 30, 4, 1, shade(skin, -45));
   }
   // 입: 한쪽 입꼬리만 올라간 비웃음
   R(17, 35, 5, 1, shade(skin, -70));
   R(22, 34, 2, 1, shade(skin, -70));
 
-  // "이리 와" 손짓: 손바닥을 위로 한 손가락이 까딱까딱 접혔다 펴진다 (0.17초 간격)
-  const curl = [8, 6, 4, 6][Math.floor(t * 6) % 4]; // 손가락 길이
-  const bob = Math.floor(t * 6) % 4 === 2 ? 1 : 0; // 접힐 때 손이 살짝 내려감
+  // 두 손가락(검지·중지)으로 느긋하게 까딱: 0.8초 주기로 천천히 접었다 펴고, 펴고 있는 시간이 더 길다
+  const step = Math.floor(((t % 0.8) / 0.8) * 8); // 0~7
+  const len = [9, 9, 9, 8, 5, 3, 5, 8][step]; // 손가락이 보이는 길이
+  const bob = step >= 4 && step <= 6 ? 1 : 0; // 접을 때 손이 살짝 내려감
   const hx = 30;
-  const hy = 34 + bob;
+  const hy = 38 + bob; // 이전보다 낮게: 힘 빼고 아래에서 까딱
   R(hx + 2, hy + 8, 7, 14, shade(color, -15)); // 소매/팔
-  R(hx, hy + 6, 9, 5, skin); // 손바닥 아랫부분(손목)
-  R(hx, hy, 9, 7, skin); // 손바닥
-  R(hx - 2, hy + 3, 2, 3, skin); // 엄지
-  [0, 2, 4, 6].forEach((dx, i) => {
-    const len = curl - (i === 3 ? 1 : 0); // 새끼손가락은 조금 짧게
-    R(hx + dx, hy - len, 2, len, skin);
-    R(hx + dx, hy - len, 2, 1, shade(skin, -25)); // 손가락 끝마디 그림자
+  R(hx, hy, 9, 9, skin); // 손바닥(주먹)
+  R(hx, hy + 8, 9, 1, shade(skin, -30)); // 손목 선
+  // 접어 쥔 약지·소지
+  R(hx + 6, hy - 1, 3, 2, shade(skin, -15));
+  R(hx + 6, hy + 2, 3, 1, shade(skin, -35));
+  // 엄지(접어 넣음)
+  R(hx - 1, hy + 3, 3, 3, skin);
+  R(hx - 1, hy + 5, 3, 1, shade(skin, -30));
+  // 검지·중지 (중지가 조금 더 길다)
+  [[1, 0], [4, 1]].forEach(([dx, extra]) => {
+    const l = len + extra;
+    R(hx + dx, hy - l, 2, l, skin);
+    R(hx + dx, hy - l, 2, 1, shade(skin, -25)); // 끝마디 그림자
+    R(hx + dx, hy - 1, 2, 1, shade(skin, -20)); // 손가락 밑 마디선
   });
-  R(hx, hy + 6, 9, 1, shade(skin, -30)); // 손목 선
 }
 
 /** 와이드: 위에서 내려다본 구장 + 양 팀 8명씩 몰려가 뭉치기 */
@@ -220,7 +230,6 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
     <div className={fullscreen ? 'cutscene fullscreen' : 'cutscene inline'}>
       <div className="cutscene-box" ref={boxRef}>
         <canvas ref={canvasRef} className="cutscene-canvas" />
-        {scene === 'closeup' && <div className="cut-label">이리 와.</div>}
         {scene === 'wide' && <div className="cut-label">벤치클리어링!</div>}
         {scene === 'start' && <div className="cut-start">START!!</div>}
         <div className="cut-flash" ref={flashRef} />
