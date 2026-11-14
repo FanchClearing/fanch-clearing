@@ -5,6 +5,15 @@ export const HAPTIC = {
   end: 900, // 종료: 한 번 크게
 };
 
+/** 아이폰/아이패드 여부 (아이패드는 맥으로 위장하므로 터치 지원 여부도 본다) */
+export function isIOS() {
+  if (typeof navigator === 'undefined') return false;
+  return (
+    /iP(hone|ad|od)/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+}
+
 export function vibrate(pattern) {
   try {
     if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {

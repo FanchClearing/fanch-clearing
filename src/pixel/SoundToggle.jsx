@@ -6,7 +6,8 @@ export default function SoundToggle() {
   const [state, setState] = useState(getSoundState());
   useEffect(() => subscribeSound(setState), []);
 
-  const label = state.muted ? '소리 꺼짐' : state.blocked ? '소리 켜기' : '소리 켜짐';
+  // 막혀 있을 때는 화면을 한 번 터치하라는 뜻이다. 브라우저는 터치 전에는 소리와 진동을 모두 막는다.
+  const label = state.muted ? '소리 꺼짐' : state.blocked ? '터치해서 소리·진동 켜기' : '소리 켜짐';
   return (
     <button
       className={'sound-toggle' + (state.blocked && !state.muted ? ' attn' : '')}

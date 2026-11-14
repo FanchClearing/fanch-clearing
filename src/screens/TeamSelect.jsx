@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getGame } from '../data/games.js';
 import { getNickname, setNickname, setTeam } from '../lib/identity.js';
+import { isIOS } from '../lib/haptics.js';
 import './select.css';
 
 export default function TeamSelect() {
@@ -26,10 +27,15 @@ export default function TeamSelect() {
     else getNickname(); // 비었으면 기존/자동 닉네임 유지
     setTeam(picked);
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    // 아이폰: 닉네임 입력 기록이 남은 페이지에서 폰을 흔들면 "실행 취소" 창이 뜬다.
-    // 입장할 때 화면 이동 대신 페이지를 새로 불러와서 입력 기록이 없는 깨끗한 상태로 게임 화면을 연다.
-    // (아이디·닉네임·팀은 저장돼 있어서 그대로 이어진다)
-    window.location.assign(`/room/${gameId}`);
+    if (isIOS()) {
+      // 아이폰: 닉네임 입력 기록이 남은 페이지에서 폰을 흔들면 "실행 취소" 창이 뜬다.
+      // 입장할 때 화면 이동 대신 페이지를 새로 불러와서 입력 기록이 없는 깨끗한 상태로 게임 화면을 연다.
+      // (아이디·닉네임·팀은 저장돼 있어서 그대로 이어진다)
+      window.location.assign(`/room/${gameId}`);
+    } else {
+      // 안드로이드 등: 페이지를 새로 열면 터치 기록이 없어져 크롬이 진동·소리를 막으므로 화면 이동만 한다.
+      navigate(`/room/${gameId}`);
+    }
   };
 
   return (
