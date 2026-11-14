@@ -1,0 +1,54 @@
+.fx-shakebox { position: relative; width: 100%; height: 100%; }
+.fx-shake { animation: fx-shake 150ms steps(3) 1; }
+@keyframes fx-shake {
+  0% { transform: translate(var(--sx), var(--sy)); }
+  50% { transform: translate(calc(var(--sx) * -0.6), calc(var(--sy) * -0.6)); }
+  100% { transform: translate(0, 0); }
+}
+
+/* 집중선: 중심에서 퍼지는 방사형 선이 천천히 회전 (단계 회전으로 픽셀 느낌) */
+.fx-speedlines {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 260%;
+  aspect-ratio: 1;
+  margin: -130% 0 0 -130%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0) 0deg 9deg,
+    rgba(255, 255, 255, 0.16) 9deg 11deg
+  );
+  animation: fx-spin 8s steps(40) infinite;
+  pointer-events: none;
+}
+@keyframes fx-spin { to { transform: rotate(360deg); } }
+
+.fx-hits { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.fx-hit {
+  position: absolute;
+  text-shadow: 3px 3px 0 #000, -1px -1px 0 #000;
+  animation: fx-hit 400ms steps(5) forwards;
+}
+@keyframes fx-hit {
+  0% { opacity: 1; transform: scale(1.4) translateY(0); }
+  100% { opacity: 0; transform: scale(1) translateY(-24px); }
+}
+
+.fx-fists { position: absolute; left: 0; right: 0; bottom: 0; height: 0; pointer-events: none; }
+.fx-fist { position: absolute; bottom: 0; width: 96px; transition: none; }
+.fx-fist.left { left: 14%; transform: rotate(-12deg); }
+.fx-fist.right { right: 14%; transform: rotate(12deg); }
+.fx-fist.left.punch { transform: translateY(-44px) scale(1.25) rotate(-6deg); }
+.fx-fist.right.punch { transform: translateY(-44px) scale(1.25) rotate(6deg); }
+.fx-fist-canvas { width: 100%; image-rendering: pixelated; display: block; }
+
+.fx-crowd {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 72%;
+  transform: translateX(-50%);
+  image-rendering: pixelated;
+  pointer-events: none;
+}
