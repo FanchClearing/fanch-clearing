@@ -9,6 +9,11 @@
   z-index: 15;
   background: #1a1c2c;
   overflow: hidden;
+  /* 화면 어디든 연타할 수 있게: 더블탭 확대·길게 눌러 선택/메뉴가 뜨지 않게 한다 */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .hud { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -48,8 +53,9 @@
   left: 16px;
   right: 16px;
   bottom: 16px;
-  font-size: 32px;
+  font-size: 26px;
   padding: 28px 0;
   background: #b13e53;
-  touch-action: manipulation;
+  text-align: center;
+  pointer-events: none; /* 눌림은 화면 전체(.battle-overlay)가 받는다 */
 }

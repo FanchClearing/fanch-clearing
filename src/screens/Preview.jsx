@@ -93,6 +93,9 @@ export function PreviewCheer() {
         team="lg"
         totals={{ lg: count, hh: opp }}
         counts={{ total: 21, lg: 12, hh: 9 }}
+        hitMine={count}
+        hitOpp={opp}
+        oppColor={game.teams.hh.color}
         myCount={count}
         sensorOk={false}
         onTap={() => setCount((n) => n + 1)}
@@ -176,6 +179,8 @@ export function PreviewBattle() {
       totals={{ lg: count, hh: opp }}
       sensorOk={false}
       onTap={() => setCount((n) => n + 1)}
+      hitMine={count}
+      hitOpp={opp}
     />
   );
 }

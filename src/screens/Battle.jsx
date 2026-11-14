@@ -13,7 +13,18 @@ import './battle.css';
 
 // 폰 전체를 덮는 1인칭 배틀 화면 (Room 내부에서 사용)
 // 게이지는 A(첫 번째 팀)가 항상 왼쪽, B가 오른쪽. 내 팀에는 MY 표시.
-export default function Battle({ game, team, battle, now, myCount, totals, sensorOk, onTap }) {
+export default function Battle({
+  game,
+  team,
+  battle,
+  now,
+  myCount,
+  totals,
+  sensorOk,
+  onTap,
+  hitMine = myCount, // 내 팀 파티클 신호: 내가 누른 것 + 같은 팀 다른 사람이 누른 것
+  hitOpp = 0, // 상대 팀 파티클 신호: 상대 팀 전체가 누른 것
+}) {
   const [aId, bId] = Object.keys(game.teams);
   const A = game.teams[aId];
   const B = game.teams[bId];
@@ -26,7 +37,8 @@ export default function Battle({ game, team, battle, now, myCount, totals, senso
   const safe = (c) => (c === '#131230' ? '#ffffff' : c); // 너무 어두운 색은 글자로 쓸 때 밝게
 
   return (
-    <div className="battle-overlay">
+    // 화면 어디를 눌러도(연타해도) 1회로 센다. 센서가 되는 폰도 흔들기와 함께 연타할 수 있다.
+    <div className="battle-overlay" onPointerDown={onTap}>
       <Stadium dim={0.2} />
       <ShakeBox hit={myCount}>
         <SpeedLines />
@@ -57,14 +69,19 @@ export default function Battle({ game, team, battle, now, myCount, totals, senso
 
         <div className="my-count">{myCount}</div>
         <Fists hit={myCount} color={myColor} />
-        {!sensorOk && (
-          <button className="px-btn tap-btn" onPointerDown={onTap}>
-            연타!
-          </button>
-        )}
+        {/* 버튼 모양은 안내용이다(눌림은 화면 전체가 받는다). 센서가 되는 폰은 안내 문구만 */}
+        <div className="px-btn tap-btn">{sensorOk ? '흔들거나 화면을 연타!' : '화면을 연타!'}</div>
       </ShakeBox>
-      {/* 벤치클리어링 중 파티클: 주먹·별·충돌 표시가 시안처럼 떠오른다 (응원보다 25% 크게) */}
-      <CheerParticles hit={myCount} color={myColor} kinds={CLASH_KINDS} scale={1.25} inline />
+      {/* 벤치클리어링 중 파티클: 주먹·별·충돌 표시가 올라온다. 참여한 모두의 것이 뜬다 (내 팀은 오른쪽, 상대 팀은 왼쪽) */}
+      <CheerParticles hit={hitMine} color={myColor} kinds={CLASH_KINDS} scale={1.25} inline />
+      <CheerParticles
+        hit={hitOpp}
+        color={oppColor}
+        kinds={CLASH_KINDS}
+        scale={1.25}
+        inline
+        xRange={[8, 32]}
+      />
     </div>
   );
 }

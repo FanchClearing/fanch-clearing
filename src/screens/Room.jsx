@@ -281,6 +281,18 @@ export default function Room() {
   const res = mine > other ? 'win' : mine < other ? 'lose' : 'draw';
   const resText = { win: '승리!', lose: '패배…', draw: '무승부' }[res];
 
+  // 파티클 신호: 참여한 모두의 응원/연타가 파티클로 뜨게 한다.
+  //  - 내 팀  = 내가 방금 누른 것(바로 반영) + 같은 팀 다른 사람이 누른 것(서버 값에서 내 저장분을 뺀 것)
+  //  - 상대 팀 = 상대 팀 전체가 누른 것
+  const meUid = getUid();
+  const myCheerSaved = (cheerList.find((p) => p.uid === meUid) || {}).count || 0;
+  const cheerHitMine = myCheerCount + Math.max(0, (cheerTotals[team] || 0) - myCheerSaved);
+  const cheerHitOpp = cheerTotals[otherId] || 0;
+  const myBattleSaved = (list.find((p) => p.uid === meUid) || {}).count || 0;
+  const battleHitMine = myCount + Math.max(0, (totals[team] || 0) - myBattleSaved);
+  const battleHitOpp = totals[otherId] || 0;
+  const oppColor = game.teams[otherId].color;
+
   return (
     <div className="screen">
       <SoundToggle />
@@ -324,6 +336,9 @@ export default function Room() {
           sensorOk={sensor === 'ready'}
           onTap={addShake}
           objection={objectionPanel}
+          hitMine={cheerHitMine}
+          hitOpp={cheerHitOpp}
+          oppColor={oppColor}
         />
       )}
 
@@ -340,6 +355,8 @@ export default function Room() {
           totals={totals}
           sensorOk={sensor === 'ready'}
           onTap={addShake}
+          hitMine={battleHitMine}
+          hitOpp={battleHitOpp}
         />
       )}
       {gameState === 'live' && phase === 'result' && (

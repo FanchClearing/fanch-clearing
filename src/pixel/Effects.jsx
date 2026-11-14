@@ -231,6 +231,7 @@ export function CheerParticles({
   scale = 1,
   inline = false,
   wide = false,
+  xRange = [68, 88], // 화면 가로 % 범위: 내 팀은 오른쪽, 상대 팀은 왼쪽에서 올라오게 나눠 쓴다
 }) {
   const [items, setItems] = useState([]);
   const idRef = useRef(0);
@@ -250,7 +251,7 @@ export function CheerParticles({
         id: idRef.current,
         kind: kinds[Math.floor(Math.random() * kinds.length)],
         size: Math.round(rnd(20, 36) * scale),
-        left: wide ? rnd(4, 92) : rnd(68, 88), // % (큰 화면은 화면 전체에서 올라온다)
+        left: wide ? rnd(4, 92) : rnd(xRange[0], xRange[1]), // % (큰 화면은 화면 전체에서 올라온다)
         rise: Math.round(h * rnd(0.55, 0.9)), // px
         sway: Math.round(rnd(-1, 1) * Math.max(10, w * 0.03)), // px
         dur: Math.round(rnd(1200, 1800)),
