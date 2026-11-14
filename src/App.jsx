@@ -6,7 +6,13 @@ import TeamSelect from './screens/TeamSelect.jsx';
 import Room from './screens/Room.jsx';
 import Host from './screens/Host.jsx';
 import Admin from './screens/Admin.jsx';
-import Preview, { PreviewBanner, PreviewBattle, PreviewCheer, PreviewTaunt } from './screens/Preview.jsx';
+import Preview, {
+  PreviewBanner,
+  PreviewBattle,
+  PreviewCheer,
+  PreviewHostBattle,
+  PreviewTaunt,
+} from './screens/Preview.jsx';
 import ToastHost from './pixel/Toast.jsx';
 import UpdateGuard from './pixel/UpdateGuard.jsx';
 
@@ -30,6 +36,7 @@ export default function App() {
           <Route path="/preview/cheer" element={<PreviewCheer />} />
           <Route path="/preview/taunt" element={<PreviewTaunt />} />
           <Route path="/preview/banner" element={<PreviewBanner />} />
+          <Route path="/preview/host-battle" element={<PreviewHostBattle />} />
         </>
       )}
       <Route path="*" element={<Home />} />

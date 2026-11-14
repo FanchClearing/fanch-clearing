@@ -6,6 +6,8 @@ import Cutscene from '../pixel/Cutscene.jsx';
 import Stadium from '../pixel/Stadium.jsx';
 import Battle from './Battle.jsx';
 import Cheer from './Cheer.jsx';
+import { HostBattleView } from './Host.jsx';
+import './host.css';
 import GameBanner, { useGameBanner } from '../pixel/GameBanner.jsx';
 import Result from './Result.jsx';
 import { CheerParticles, TAUNT_KINDS } from '../pixel/Effects.jsx';
@@ -31,6 +33,33 @@ export function PreviewBanner() {
     <div className="screen">
       <GameBanner banner={banner} />
       <p>경기 상태: {ready ? state : '불러오는 중'}</p>
+    </div>
+  );
+}
+
+// 전광판 벤치클리어링 화면 미리보기 (점수 위, 시간 작게). ?auto=1 이면 점수가 저절로 오른다
+export function PreviewHostBattle() {
+  const game = GAMES[0];
+  const [a, setA] = useState(12);
+  const [b, setB] = useState(9);
+  const [secLeft, setSecLeft] = useState(7);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setA((n) => n + Math.floor(Math.random() * 3));
+      setB((n) => n + Math.floor(Math.random() * 3));
+      setSecLeft((s) => (s > 0 ? s - 1 : 7));
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="screen wide host hx">
+      <header className="hx-head">
+        <h1>LG <small>vs</small> 한화</h1>
+        <span className="hx-state on">벤치클리어링 배틀</span>
+      </header>
+      <main className="hx-main">
+        <HostBattleView A={game.teams.lg} B={game.teams.hh} scoreA={a} scoreB={b} secLeft={secLeft} />
+      </main>
     </div>
   );
 }

@@ -87,3 +87,12 @@
 /* 세로가 화면을 넘지 않게 높이를 줄이고, 소리 버튼은 오른쪽 아래(빈 곳)로 */
 .hx-main { min-height: calc(100vh - 165px); }
 .host .sound-toggle { left: auto; right: 10px; bottom: 10px; top: auto; }
+
+/* 배틀 중 전광판: 점수(크게) → 남은 시간(작게) → 밀어내기 바 */
+.hx-battle { display: flex; flex-direction: column; gap: 18px; }
+.hx-battle .hx-team { padding: 16px 24px; }
+.hx-battle .hx-team-score { font-size: clamp(90px, 13vw, 260px); }
+.hx-timeleft { text-align: center; font-size: clamp(22px, 2.4vw, 40px); color: #c9c6dc; }
+.hx-timeleft b { color: #ffd23f; font-weight: 400; font-size: 1.5em; margin: 0 6px; }
+.hx-main > .hx-battle { flex: 1; }
+.hx-battle .hx-teams { flex: 1; }

@@ -55,6 +55,31 @@ function usePresenceFeed(gameId) {
   return feed;
 }
 
+/**
+ * 벤치클리어링 배틀 중 전광판 화면. 순서: 점수(맨 위, 가장 크게) → 남은 시간(작게) → 밀어내기 바.
+ * 시간이 점수보다 눈에 띄면 숫자가 점수로 오해된다는 의견이 있어서 시간은 작게 점수 아래에 둔다.
+ */
+export function HostBattleView({ A, B, scoreA, scoreB, secLeft }) {
+  return (
+    <div className="hx-battle">
+      <div className="hx-teams">
+        <div className="hx-team" style={{ background: A.color }}>
+          <div className="hx-team-name">A {A.name}</div>
+          <div className="hx-team-score">{scoreA}</div>
+        </div>
+        <div className="hx-team" style={{ background: B.color }}>
+          <div className="hx-team-name">B {B.name}</div>
+          <div className="hx-team-score">{scoreB}</div>
+        </div>
+      </div>
+      <div className="hx-timeleft">
+        남은 시간 <b>{secLeft}</b>초
+      </div>
+      <PushBar scoreA={scoreA} scoreB={scoreB} colorA={A.color} colorB={B.color} height={80} />
+    </div>
+  );
+}
+
 // 전광판(큰 화면, 가로): 경기 상황 + 운영 조작 + MVP + 입장 알림을 한 화면에 모은다.
 export default function Host() {
   const { gameId } = useParams();
@@ -194,14 +219,7 @@ export default function Host() {
         )}
 
         {live && phase === 'battle' && (
-          <div className="host-battle">
-            <div className="host-timer">{sec(battle.endAt - now)}</div>
-            <PushBar scoreA={bA} scoreB={bB} colorA={A.color} colorB={B.color} height={80} />
-            <div className="host-totals">
-              <span style={{ color: safe(A.color) }}>A {A.name} {bA}</span>
-              <span style={{ color: safe(B.color) }}>{bB} {B.name} B</span>
-            </div>
-          </div>
+          <HostBattleView A={A} B={B} scoreA={bA} scoreB={bB} secLeft={sec(battle.endAt - now)} />
         )}
 
         {live && phase === 'result' && battleWinner && (
