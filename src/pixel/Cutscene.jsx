@@ -23,7 +23,7 @@ function shade(hex, amt) {
 const ease = (p) => p * p * (3 - 2 * p);
 
 /** 클로즈업: 무표정으로 노려보는 선수 상반신 (얼굴·로고 없이 팀 컬러 모자·유니폼만) */
-function drawCloseup(ctx, color, sub, blink) {
+function drawCloseup(ctx, color, sub, blink, t) {
   // 잔디 단색 + 노이즈
   rect(ctx, 0, 0, W, H, '#38b764');
   const rand = seededRandom(11);
@@ -50,15 +50,27 @@ function drawCloseup(ctx, color, sub, blink) {
   R(12, 20, 16, 18, skin);
   R(11, 27, 1, 5, shade(skin, -20));
   R(28, 27, 1, 5, shade(skin, -20));
-  // 모자
-  R(11, 11, 18, 12, color);
-  R(11, 11, 18, 2, shade(color, 35));
-  R(9, 22, 22, 3, shade(color, -45));
-  // 눈썹(안쪽이 내려간 노려보는 각도)
+
+  // 야구 모자: 둥근 크라운 + 솔기 + 꼭지 단추 + 넓고 둥근 챙
+  R(13, 8, 14, 2, color);
+  R(11, 10, 18, 3, color);
+  R(10, 13, 20, 9, color);
+  R(13, 8, 5, 1, shade(color, 40)); // 윗면 하이라이트
+  R(11, 10, 3, 2, shade(color, 30));
+  R(19, 7, 2, 1, shade(color, -40)); // 꼭지 단추
+  R(20, 9, 1, 13, shade(color, -35)); // 가운데 솔기
+  R(15, 11, 1, 11, shade(color, -25)); // 옆 솔기
+  R(25, 11, 1, 11, shade(color, -25));
+  R(9, 21, 22, 1, shade(color, -30)); // 크라운 아랫단
+  R(7, 22, 26, 2, shade(color, -50)); // 챙 (넓게)
+  R(9, 24, 22, 1, shade(color, -75)); // 챙 아래쪽 둥근 가장자리
+  R(12, 25, 16, 2, shade(skin, -55)); // 챙 그림자(이마·눈 위)
+
+  // 눈썹: 왼쪽은 찌푸림, 오른쪽은 한쪽만 치켜올림(도발)
   R(13, 27, 3, 1, dark);
   R(16, 28, 2, 1, dark);
-  R(22, 28, 2, 1, dark);
-  R(24, 27, 3, 1, dark);
+  R(22, 27, 2, 1, dark);
+  R(24, 26, 3, 1, dark);
   // 눈 (깜빡일 때는 한 줄)
   if (blink) {
     R(14, 31, 4, 1, dark);
@@ -69,8 +81,25 @@ function drawCloseup(ctx, color, sub, blink) {
     R(16, 30, 2, 2, dark);
     R(22, 30, 2, 2, dark);
   }
-  // 입 (무표정)
-  R(17, 35, 6, 1, shade(skin, -70));
+  // 입: 한쪽 입꼬리만 올라간 비웃음
+  R(17, 35, 5, 1, shade(skin, -70));
+  R(22, 34, 2, 1, shade(skin, -70));
+
+  // "이리 와" 손짓: 손바닥을 위로 한 손가락이 까딱까딱 접혔다 펴진다 (0.17초 간격)
+  const curl = [8, 6, 4, 6][Math.floor(t * 6) % 4]; // 손가락 길이
+  const bob = Math.floor(t * 6) % 4 === 2 ? 1 : 0; // 접힐 때 손이 살짝 내려감
+  const hx = 30;
+  const hy = 34 + bob;
+  R(hx + 2, hy + 8, 7, 14, shade(color, -15)); // 소매/팔
+  R(hx, hy + 6, 9, 5, skin); // 손바닥 아랫부분(손목)
+  R(hx, hy, 9, 7, skin); // 손바닥
+  R(hx - 2, hy + 3, 2, 3, skin); // 엄지
+  [0, 2, 4, 6].forEach((dx, i) => {
+    const len = curl - (i === 3 ? 1 : 0); // 새끼손가락은 조금 짧게
+    R(hx + dx, hy - len, 2, len, skin);
+    R(hx + dx, hy - len, 2, 1, shade(skin, -25)); // 손가락 끝마디 그림자
+  });
+  R(hx, hy + 6, 9, 1, shade(skin, -30)); // 손목 선
 }
 
 /** 와이드: 위에서 내려다본 구장 + 양 팀 8명씩 몰려가 뭉치기 */
@@ -153,7 +182,7 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
       try {
         if (nextScene === 'closeup') {
           const blink = t % 1 > 0.88; // 1초마다 눈 깜빡임
-          drawCloseup(offCtx, mine.color, mine.sub, blink);
+          drawCloseup(offCtx, mine.color, mine.sub, blink, t);
           // 아래에서 위로 살짝 줌인 (정수에 가까운 단계로)
           const s = 1 + Math.round(Math.min(t / CLOSEUP_END, 1) * 6) * 0.02;
           ctx.clearRect(0, 0, W, H);
@@ -191,7 +220,7 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
     <div className={fullscreen ? 'cutscene fullscreen' : 'cutscene inline'}>
       <div className="cutscene-box" ref={boxRef}>
         <canvas ref={canvasRef} className="cutscene-canvas" />
-        {scene === 'closeup' && <div className="cut-label">…</div>}
+        {scene === 'closeup' && <div className="cut-label">이리 와.</div>}
         {scene === 'wide' && <div className="cut-label">벤치클리어링!</div>}
         {scene === 'start' && <div className="cut-start">START!!</div>}
         <div className="cut-flash" ref={flashRef} />
