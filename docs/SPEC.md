@@ -176,3 +176,4 @@ SCORE_FLUSH_MS = 300
 - **진동**: START!! 순간 3번, 배틀 종료 시 1번 크게, 흔들 때마다 짧게(안드로이드만, iOS 미지원).
 - **밀어내기 바**: 응원·배틀·운영자 화면 모두 같은 부품(`pixel/PushBar.jsx`).
 - **DB 추가**: `rooms/{gameId}/game`, `cheer/{runId}/{uid}`, `config/{battleMs,threshold,countAdjust/{teamId}}`.
+- **메롱 놀리기**: 벤치클리어링 결과 화면(15초) 동안 **이긴 팀 팬**에게만 [메롱~] 버튼이 나온다(동점이면 없음). 연타하면 메롱 얼굴 파티클이 올라오고, 이긴 팀 색 파티클이 진 팀 폰과 전광판 화면에도 같이 올라온다. DB: `rooms/{gameId}/taunt/{battleId}/{uid} = {team, count}`.

@@ -78,3 +78,6 @@
 
 /* 배틀 오버레이(이미 폭이 고정된 상자) 안에서 쓰는 파티클 층 */
 .fx-particles.in-overlay { position: absolute; left: 0; width: 100%; transform: none; }
+
+/* 전광판(가로 큰 화면)용: 화면 전체 폭 */
+.fx-particles.wide { left: 0; width: 100%; transform: none; }

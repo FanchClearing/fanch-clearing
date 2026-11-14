@@ -6,6 +6,9 @@ import Cutscene from '../pixel/Cutscene.jsx';
 import Stadium from '../pixel/Stadium.jsx';
 import Battle from './Battle.jsx';
 import Cheer from './Cheer.jsx';
+import Result from './Result.jsx';
+import { CheerParticles, TAUNT_KINDS } from '../pixel/Effects.jsx';
+import './result.css';
 import './room.css';
 import './cheer.css';
 
@@ -48,6 +51,42 @@ export function PreviewCheer() {
           </div>
         }
       />
+    </div>
+  );
+}
+
+// 결과 화면 + 이긴 팀 [메롱] 놀리기 미리보기 (이긴 팀 = LG). ?auto=1 이면 저절로 연타
+export function PreviewTaunt() {
+  const game = GAMES[0];
+  const [count, setCount] = useState(0);
+  const [now] = useState(() => serverNow());
+  const auto = new URLSearchParams(window.location.search).has('auto');
+
+  useEffect(() => {
+    if (!auto) return undefined;
+    const t = setInterval(() => setCount((n) => n + 1), 120);
+    return () => clearInterval(t);
+  }, [auto]);
+
+  return (
+    <div className="screen">
+      <Stadium tint={game.teams.lg.color} dim={0.06} />
+      <h2 className="room-title">LG vs 한화</h2>
+      <Result
+        game={game}
+        team="lg"
+        battle={{ id: 'preview', endAt: now - 2000 }}
+        now={now}
+        totals={{ lg: 41, hh: 26 }}
+        list={[{ uid: 'a', team: 'lg', nickname: '흔들왕123', count: 22 }, { uid: 'b', team: 'hh', nickname: '한화팬', count: 14 }]}
+        myCount={19}
+      />
+      <CheerParticles hit={count} color={game.teams.lg.color} kinds={TAUNT_KINDS} scale={1.3} />
+      <div className="taunt-bar">
+        <button className="px-btn taunt-btn" onPointerDown={() => setCount((n) => n + 1)}>
+          메롱~ <small>{count}</small>
+        </button>
+      </div>
     </div>
   );
 }

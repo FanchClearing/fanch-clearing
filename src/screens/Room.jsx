@@ -14,14 +14,17 @@ import {
   addObjection,
   joinRoom,
   setMyCheer,
+  setMyTaunt,
   usePresenceCounts,
   setMyShake,
   useBattlePhase,
   useCheerScores,
   useShakeScores,
+  useTauntScores,
 } from '../lib/room.js';
 import Stadium from '../pixel/Stadium.jsx';
 import PushBar from '../pixel/PushBar.jsx';
+import { CheerParticles, TAUNT_KINDS } from '../pixel/Effects.jsx';
 import Cutscene from '../pixel/Cutscene.jsx';
 import Battle from './Battle.jsx';
 import Cheer from './Cheer.jsx';
@@ -46,19 +49,33 @@ export default function Room() {
   const { totals, list } = useShakeScores(gameId, battleId); // 배틀 점수
   const { totals: cheerTotals, list: cheerList } = useCheerScores(gameId, runId); // 평소 응원 점수
   const counts = usePresenceCounts(gameId); // 참여 인원 (운영자 가감 반영)
+  const { others: tauntOthers } = useTauntScores(gameId, battleId, getUid()); // 다른 사람들이 놀린 횟수
 
   const [sensor, setSensor] = useState('off'); // off | ready | denied | none
   const [myCount, setMyCount] = useState(0); // 내 배틀 점수
   const [myCheerCount, setMyCheerCount] = useState(0); // 내 응원 점수
+  const [myTauntCount, setMyTauntCount] = useState(0); // 내가 놀린(메롱) 횟수
 
   const countRef = useRef(0);
   const sentRef = useRef(-1);
   const cheerRef = useRef(0);
   const cheerSentRef = useRef(-1);
+  const tauntRef = useRef(0);
+  const tauntSentRef = useRef(-1);
   const battleRef = useRef(null);
   const modeRef = useRef({});
   battleRef.current = battle;
-  modeRef.current = { gameState, phase, runId };
+
+  // 벤치클리어링에서 이긴 팀(동점이면 없음): 이긴 팀만 결과 화면에서 상대를 놀릴 수 있다
+  const [tA, tB] = game ? Object.keys(game.teams) : [];
+  const winId =
+    game && (totals[tA] || 0) !== (totals[tB] || 0)
+      ? (totals[tA] || 0) > (totals[tB] || 0)
+        ? tA
+        : tB
+      : null;
+  const isWinner = Boolean(winId && winId === team);
+  modeRef.current = { gameState, phase, runId, isWinner };
 
   const valid = Boolean(game && team && game.teams[team]);
 
@@ -75,6 +92,9 @@ export default function Room() {
     countRef.current = 0;
     sentRef.current = -1;
     setMyCount(0);
+    tauntRef.current = 0;
+    tauntSentRef.current = -1;
+    setMyTauntCount(0);
   }, [battleId]);
 
   // 새 경기가 시작되면 내 응원 카운트 초기화
@@ -128,6 +148,15 @@ export default function Room() {
     }
   }, []);
 
+  // 메롱 1번 = +1 (결과 화면에서 이긴 팀만)
+  const addTaunt = useCallback(() => {
+    const m = modeRef.current;
+    if (m.gameState !== 'live' || m.phase !== 'result' || !m.isWinner) return;
+    tauntRef.current += 1;
+    setMyTauntCount(tauntRef.current);
+    vibrate(HAPTIC.shake);
+  }, []);
+
   // 배틀이 끝나 결과로 넘어가는 순간 크게 한 번 (중간에 들어온 폰은 울리지 않는다)
   const prevPhase = useRef(phase);
   useEffect(() => {
@@ -163,6 +192,24 @@ export default function Room() {
       flush();
     };
   }, [phase, battleId, gameId, team, valid]);
+
+  // 결과 화면에서 놀리는 동안 300ms마다 내 횟수 저장 (바뀐 때만), 끝날 때 마지막으로 한 번 더
+  useEffect(() => {
+    if (phase !== 'result' || !battleId || !isWinner || !valid) return undefined;
+    const flush = () => {
+      if (tauntRef.current === tauntSentRef.current) return;
+      tauntSentRef.current = tauntRef.current;
+      setMyTaunt(gameId, battleId, getUid(), { team, count: tauntRef.current }).catch((e) => {
+        console.error('메롱 저장 실패', e);
+        tauntSentRef.current = -1;
+      });
+    };
+    const t = setInterval(flush, SCORE_FLUSH_MS);
+    return () => {
+      clearInterval(t);
+      flush();
+    };
+  }, [phase, battleId, isWinner, gameId, team, valid]);
 
   // 경기 진행 중에는 300ms마다 내 응원 점수 저장 (바뀐 때만)
   useEffect(() => {
@@ -302,6 +349,25 @@ export default function Room() {
           list={list}
           myCount={myCount}
         />
+      )}
+
+      {gameState === 'live' && phase === 'result' && winId && (
+        <>
+          {/* 이긴 팀이 놀리는 메롱 파티클: 이긴 팀·진 팀 모두의 화면에 올라온다 */}
+          <CheerParticles
+            hit={myTauntCount + tauntOthers}
+            color={game.teams[winId].color}
+            kinds={TAUNT_KINDS}
+            scale={1.3}
+          />
+          {isWinner && (
+            <div className="taunt-bar">
+              <button className="px-btn taunt-btn" onPointerDown={addTaunt}>
+                메롱~ <small>{myTauntCount}</small>
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <button className="px-btn ready-btn" disabled={sensor !== 'off'} onClick={prepareShake}>

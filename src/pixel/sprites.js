@@ -69,6 +69,18 @@ export const STICK = [
   '..kk..',
 ];
 
+// 메롱 얼굴 (x = 이긴 팀 컬러, r = 혀)
+export const TAUNT_FACE = [
+  '..kkkk..',
+  '.kxxxxk.',
+  'kxkxxkxk',
+  'kxxxxxxk',
+  'kxkkkkxk',
+  '.kxrrxk.',
+  '..krrk..',
+  '...kk...',
+];
+
 // 벤치클리어링(배틀) 파티클용: 주먹(x = 팀 컬러), 별, 충돌 표시(y = 노랑)
 export const PARTICLE_FIST = [
   '.kkkkkk.',

@@ -7,11 +7,13 @@ import {
   useCheerScores,
   usePresenceCounts,
   useShakeScores,
+  useTauntScores,
 } from '../lib/room.js';
 import Cutscene from '../pixel/Cutscene.jsx';
 import SoundToggle from '../pixel/SoundToggle.jsx';
 import { sceneFor, useSceneSound } from '../lib/sound.js';
 import PushBar from '../pixel/PushBar.jsx';
+import { CheerParticles, TAUNT_KINDS } from '../pixel/Effects.jsx';
 import Result from './Result.jsx';
 import './room.css';
 import './battle.css';
@@ -29,6 +31,7 @@ export default function Host() {
   const battleId = battle && battle.state === 'cutscene' ? battle.id : null;
   const { totals, list } = useShakeScores(gameId, battleId);
   const { totals: cheer } = useCheerScores(gameId, runId);
+  const { total: tauntTotal } = useTauntScores(gameId, battleId, null); // 이긴 팀이 놀린 횟수
 
   // 전광판에서도 같은 음악을 튼다 (브라우저 정책상 화면을 한 번 눌러야 시작된다)
   useSceneSound(game ? sceneFor(gameState, phase) : null);
@@ -45,6 +48,9 @@ export default function Host() {
   const cheerA = cheer[aId] || 0;
   const cheerB = cheer[bId] || 0;
   const winner = cheerA === cheerB ? null : cheerA > cheerB ? A : B;
+  const bA = totals[aId] || 0;
+  const bB = totals[bId] || 0;
+  const battleWinner = bA === bB ? null : bA > bB ? A : B; // 벤치클리어링 승리 팀
 
   const qr = (size) => (
     <div className="qr-box">
@@ -119,6 +125,11 @@ export default function Host() {
             <span style={{ color: safe(B.color) }}>{totals[bId] || 0} {B.name} B</span>
           </div>
         </div>
+      )}
+
+      {live && phase === 'result' && battleWinner && (
+        // 이긴 팀의 메롱 파티클이 전광판 화면 전체에서 올라온다
+        <CheerParticles hit={tauntTotal} color={battleWinner.color} kinds={TAUNT_KINDS} scale={2.2} wide />
       )}
 
       {live && phase === 'result' && (

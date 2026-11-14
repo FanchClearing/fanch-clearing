@@ -67,7 +67,7 @@ function tryPlay() {
         blocked = true;
         notify();
       }
-      console.error('음악 재생 대기 (화면을 한 번 눌러야 합니다)', e && e.name);
+      console.warn('음악 재생 대기 (화면을 한 번 눌러야 합니다)', e && e.name);
     });
   }
 }
