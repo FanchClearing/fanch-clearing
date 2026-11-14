@@ -54,13 +54,24 @@
 }
 
 /* 응원 파티클 */
-.fx-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
+/* 화면 전체(모바일 폭)에 고정, 패널 위로 떠오른다. 화면 흔들림 박스 밖에 렌더한다. */
+.fx-particles {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: min(100vw, 430px);
+  transform: translateX(-50%);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 12;
+}
 .fx-pt { position: absolute; bottom: 2%; animation: fx-rise var(--t) steps(14) forwards; }
 .fx-pt-canvas { width: 100%; display: block; image-rendering: pixelated; }
 @keyframes fx-rise {
   0% { transform: translate(0, 0) scale(0.4); opacity: 1; }
-  25% { transform: translate(var(--sw), -70px) scale(1); }
-  50% { transform: translate(calc(var(--sw) * -1), -150px); }
-  75% { transform: translate(var(--sw), -230px); opacity: 1; }
-  100% { transform: translate(0, -300px); opacity: 0; }
+  25% { transform: translate(var(--dx), calc(var(--h) * -0.25)) scale(1); }
+  50% { transform: translate(calc(var(--dx) * -0.7), calc(var(--h) * -0.5)) scale(1); }
+  75% { transform: translate(var(--dx), calc(var(--h) * -0.75)) scale(1); opacity: 1; }
+  100% { transform: translate(0, calc(var(--h) * -1)) scale(0.9); opacity: 0; }
 }

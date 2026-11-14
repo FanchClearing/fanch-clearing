@@ -17,15 +17,24 @@ function useIncrease(hit) {
 }
 
 /** 흔들기 1회마다 150ms 화면 흔들림 (CSS 변수로 랜덤 방향) */
-export function ShakeBox({ hit, children, className = '', amp = 8 }) {
+export function ShakeBox({ hit, children, className = '', amp = 8, growing = false }) {
   const ref = useRef(null);
+  const streak = useRef({ n: 0, last: 0 });
   const increased = useIncrease(hit);
 
   useEffect(() => {
     const el = ref.current;
     if (!el || !increased) return;
-    el.style.setProperty('--sx', `${Math.round((Math.random() * 2 - 1) * amp)}px`);
-    el.style.setProperty('--sy', `${Math.round((Math.random() * 2 - 1) * amp)}px`);
+    // growing: 0.4초 안에 이어서 흔들면 흔들림이 2px → 8px까지 점점 커진다 (쉬면 처음부터)
+    let a = amp;
+    if (growing) {
+      const t = performance.now();
+      streak.current.n = t - streak.current.last < 400 ? streak.current.n + 1 : 0;
+      streak.current.last = t;
+      a = Math.min(8, Math.max(2, 2 + streak.current.n * 0.5));
+    }
+    el.style.setProperty('--sx', `${Math.round((Math.random() * 2 - 1) * a)}px`);
+    el.style.setProperty('--sy', `${Math.round((Math.random() * 2 - 1) * a)}px`);
     el.classList.remove('fx-shake');
     void el.offsetWidth; // 애니메이션 재시작
     el.classList.add('fx-shake');
@@ -168,11 +177,13 @@ export function OpponentCrowd({ color }) {
 }
 
 // ------------------------------------------------------------- 응원 파티클
-// 흔들 때마다 오른쪽 아래에서 1개가 떠올라 좌우로 흔들리며 사라진다 (인스타 라이브 하트).
-// 동시에 최대 30개까지만 유지한다.
+// 흔들 때마다 화면 오른쪽 아래에서 1개가 떠올라 좌우로 흔들리며 사라진다 (인스타 라이브 하트).
+// UI 시안과 같은 값: 하트가 가장 자주(2/4), 위치 68~88%, 크기 20~36px, 화면 높이의 55~90%까지 상승,
+// 1.2~1.8초, 동시에 최대 30개.
 
-const CHEER_KINDS = ['heart', 'ball', 'stick'];
+const CHEER_KINDS = ['heart', 'heart', 'ball', 'stick'];
 const MAX_PARTICLES = 30;
+const rnd = (a, b) => a + Math.random() * (b - a);
 
 function SpriteCanvas({ kind, color }) {
   const ref = useRef(null);
@@ -181,7 +192,7 @@ function SpriteCanvas({ kind, color }) {
     try {
       const sprite = kind === 'heart' ? HEART : kind === 'stick' ? STICK : BALL;
       const ctx = setupCanvas(ref.current, sprite[0].length, sprite.length);
-      drawSprite(ctx, sprite, 0, 0, 1, { r: color, y: color, k: '#1a1c2c', w: '#f4f4f4' });
+      drawSprite(ctx, sprite, 0, 0, 1, { k: '#000000', x: color, w: '#ffffff' });
     } catch (e) {
       console.error('파티클 그리기 실패', e);
     }
@@ -189,22 +200,28 @@ function SpriteCanvas({ kind, color }) {
   return <canvas ref={ref} className="fx-pt-canvas" />;
 }
 
+/** 화면 전체(모바일 폭)에 고정된 파티클 층. 화면 흔들림 박스 밖에 둬야 위치가 흔들리지 않는다. */
 export function CheerParticles({ hit, color }) {
   const [items, setItems] = useState([]);
   const idRef = useRef(0);
+  const layerRef = useRef(null);
   const increased = useIncrease(hit);
 
   useEffect(() => {
     if (!increased) return;
+    const layer = layerRef.current;
+    const w = layer ? layer.clientWidth : 360;
+    const h = layer ? layer.clientHeight : 640;
     idRef.current += 1;
     const id = idRef.current;
-    const dur = 1200 + Math.floor(Math.random() * 600); // 1.2~1.8초
+    const dur = Math.round(rnd(1200, 1800));
     const item = {
       id,
       kind: CHEER_KINDS[Math.floor(Math.random() * CHEER_KINDS.length)],
-      size: 16 + Math.floor(Math.random() * 3) * 8, // 16~32px
-      right: 4 + Math.random() * 14, // %
-      sway: 8 + Math.random() * 18, // px
+      size: Math.round(rnd(20, 36)),
+      left: rnd(68, 88), // %
+      rise: Math.round(h * rnd(0.55, 0.9)), // px
+      sway: Math.round(rnd(-1, 1) * Math.max(10, w * 0.03)), // px
       dur,
     };
     setItems((list) => [...list.slice(-(MAX_PARTICLES - 1)), item]);
@@ -213,12 +230,18 @@ export function CheerParticles({ hit, color }) {
   }, [hit, increased]);
 
   return (
-    <div className="fx-particles" aria-hidden="true">
+    <div className="fx-particles" ref={layerRef} aria-hidden="true">
       {items.map((i) => (
         <span
           key={i.id}
           className="fx-pt"
-          style={{ right: `${i.right}%`, width: i.size, '--sw': `${i.sway}px`, '--t': `${i.dur}ms` }}
+          style={{
+            left: `${i.left}%`,
+            width: i.size,
+            '--h': `${i.rise}px`,
+            '--dx': `${i.sway}px`,
+            '--t': `${i.dur}ms`,
+          }}
         >
           <SpriteCanvas kind={i.kind} color={color} />
         </span>

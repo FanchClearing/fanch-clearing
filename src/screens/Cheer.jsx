@@ -23,7 +23,8 @@ export default function Cheer({
   const myColor = game.teams[team].color;
 
   return (
-    <ShakeBox hit={myCount} amp={3} className="cheer-box">
+    <>
+      <ShakeBox hit={myCount} growing className="cheer-box">
       <div className="cheer">
         <div className="cheer-badge">응원 중</div>
 
@@ -52,7 +53,8 @@ export default function Cheer({
 
         {objection}
       </div>
+      </ShakeBox>
       <CheerParticles hit={myCount} color={myColor} />
-    </ShakeBox>
+    </>
   );
 }
