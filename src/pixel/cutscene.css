@@ -57,3 +57,16 @@
 }
 
 .cut-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+
+/* 휘슬 장면 글자: 심판이 호루라기를 부는 순간(0.3초)에 튀어나온다 */
+.cut-whistle {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 14%;
+  text-align: center;
+  font-size: 46px;
+  color: #ffd23f;
+  text-shadow: 4px 4px 0 #b13e53, 7px 7px 0 #000;
+  animation: pop 0.25s steps(4) 0.3s both;
+}

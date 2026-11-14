@@ -6,6 +6,9 @@ const FILES = {
   battle: '/sound/battle.m4a',
   end: '/sound/end.m4a',
 };
+// 한 번만 울리는 효과음
+const EFFECTS = { whistle: '/sound/whistle.mp3' };
+const effectAudios = {};
 const VOLUME = 0.7;
 const MUTE_KEY = 'objection.muted';
 
@@ -80,6 +83,21 @@ if (typeof window !== 'undefined') {
   ['pointerdown', 'touchend', 'keydown'].forEach((ev) =>
     window.addEventListener(ev, unlock, { passive: true })
   );
+}
+
+/** 효과음 한 번 재생 (음소거면 건너뛴다). 브라우저가 막으면 조용히 무시한다 */
+export function playEffect(name) {
+  if (muted || !EFFECTS[name]) return;
+  try {
+    if (!effectAudios[name]) effectAudios[name] = new Audio(EFFECTS[name]);
+    const a = effectAudios[name];
+    a.currentTime = 0;
+    a.volume = 1;
+    const p = a.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  } catch (e) {
+    console.warn('효과음 재생 실패', e);
+  }
 }
 
 /** 장면 음악 전환. 같은 장면이면 이어서 틀고, null이면 멈춘다 */

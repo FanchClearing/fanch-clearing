@@ -16,7 +16,7 @@ import { showToast } from './toast.js';
 
 export const OBJECTION_WINDOW_MS = 10000;
 export const OBJECTION_THRESHOLD = 3;
-export const CUTSCENE_MS = 5000;
+export const CUTSCENE_MS = 6200; // 휘슬 연출 1.2초 + 클로즈업 2초 + 와이드 2초 + START 1초
 export const BATTLE_MS = 10000; // 기본값. 운영자가 방 설정으로 바꿀 수 있다
 export const BATTLE_MIN_MS = 5000;
 export const BATTLE_MAX_MS = 60000;

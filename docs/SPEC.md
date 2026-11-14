@@ -177,3 +177,4 @@ SCORE_FLUSH_MS = 300
 - **밀어내기 바**: 응원·배틀·운영자 화면 모두 같은 부품(`pixel/PushBar.jsx`).
 - **DB 추가**: `rooms/{gameId}/game`, `cheer/{runId}/{uid}`, `config/{battleMs,threshold,countAdjust/{teamId}}`.
 - **메롱 놀리기**: 벤치클리어링 결과 화면(15초) 동안 **이긴 팀 팬**에게만 [메롱~] 버튼이 나온다(동점이면 없음). 연타하면 메롱 얼굴 파티클이 올라오고, 이긴 팀 색 파티클이 진 팀 폰과 전광판 화면에도 같이 올라온다. DB: `rooms/{gameId}/taunt/{battleId}/{uid} = {team, count}`.
+- **휘슬 연출**: 이의 있음이 기준 인원에 도달해 판정이 시작되면 컷신 맨 앞 1.2초에 픽셀 심판이 달려 들어와 호루라기를 불고(휘슬 효과음 `whistle.mp3`, 음파선, "삐—익!") 지나간다. 그래서 컷신은 5초 → **6.2초**(`CUTSCENE_MS = 6200`)가 됐다. 이후 클로즈업 → 와이드 → START!! 순서는 그대로다.

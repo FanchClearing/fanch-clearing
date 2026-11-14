@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { serverNow } from '../lib/serverTime.js';
 import { HAPTIC, vibrate } from '../lib/haptics.js';
-import { rect, seededRandom, setupCanvas } from './draw.js';
+import { playEffect } from '../lib/sound.js';
+import { drawSprite, line, rect, seededRandom, setupCanvas } from './draw.js';
+import { UMPIRE, UMPIRE_PALETTE, WHISTLE } from './sprites.js';
 import { STADIUM_H, STADIUM_W, drawStadium } from './Stadium.jsx';
 import './cutscene.css';
 
 const W = STADIUM_W; // 160
 const H = STADIUM_H; // 284
-const CLOSEUP_END = 2; // 초
-const WIDE_END = 4;
-const TOTAL = 5;
+const WHISTLE_END = 1.2; // 초: 심판 휘슬 연출 (0~1.2)
+const CLOSEUP_END = 3.2; // 클로즈업 (1.2~3.2)
+const WIDE_END = 5.2; // 와이드 벤치클리어링 (3.2~5.2)
+const TOTAL = 6.2; // START!! (5.2~6.2)  ※ lib/room.js 의 CUTSCENE_MS 와 같아야 한다
 const PLAYERS_PER_TEAM = 8;
 
 function shade(hex, amt) {
@@ -147,8 +150,47 @@ function makePlayers() {
   return list;
 }
 
+/** 휘슬 장면(0~1.2초): 심판이 왼쪽에서 달려 들어와 호루라기를 불고(음파선) 오른쪽으로 빠져나간다 */
+function drawWhistle(ctx, t) {
+  drawStadium(ctx);
+  rect(ctx, 0, 0, W, H, 'rgba(0, 0, 0, 0.4)'); // 심판이 돋보이게 배경을 어둡게
+
+  const S = 5; // 스프라이트 확대 배율 (16x23 → 80x115)
+  const p = Math.min(1, t / WHISTLE_END);
+  const stand = (W - 16 * S) / 2;
+  let x = stand;
+  if (p < 0.3) x = -16 * S + (stand + 16 * S) * (1 - (1 - p / 0.3) ** 2); // 들어옴 (점점 느려짐)
+  else if (p > 0.8) x = stand + (W - stand + 10) * ((p - 0.8) / 0.2) ** 2; // 빠져나감 (점점 빨라짐)
+  const blowing = p >= 0.3 && p <= 0.8;
+  const beat = Math.floor(t * 10) % 2; // 0.1초마다 번갈아
+  const y = 118 + (blowing && beat ? -2 : 0) + (!blowing ? Math.abs(Math.sin(t * 30)) * -3 : 0); // 달릴 때 통통
+
+  drawSprite(ctx, UMPIRE, x, y, S, UMPIRE_PALETTE);
+  if (blowing) {
+    // 볼이 부풀었다 들어갔다 하며 호루라기를 문다
+    if (beat) {
+      rect(ctx, x + 3 * S, y + 10 * S, S, S, '#c99a7c');
+      rect(ctx, x + 12 * S, y + 10 * S, S, S, '#c99a7c');
+    }
+    rect(ctx, x + 7 * S, y + 10 * S, 2 * S, S, '#0b0c14'); // 벌린 입
+    drawSprite(ctx, WHISTLE, x + 8 * S, y + 9 * S, S, UMPIRE_PALETTE);
+    // 호루라기에서 퍼져 나가는 음파선 3줄
+    const ox = x + 14 * S;
+    const oy = y + 10 * S;
+    [-0.6, 0, 0.6].forEach((ang, i) => {
+      const r = 8 + ((t * 70 + i * 9) % 26);
+      const x0 = ox + Math.cos(ang) * r;
+      const y0 = oy + Math.sin(ang) * r;
+      const c = i % 2 ? '#ffd23f' : '#ffffff';
+      line(ctx, x0, y0, x0 + Math.cos(ang) * 7, y0 + Math.sin(ang) * 7, c);
+      line(ctx, x0, y0 + 1, x0 + Math.cos(ang) * 7, y0 + 1 + Math.sin(ang) * 7, c);
+    });
+  }
+}
+
 /**
- * 컷신 5초: 클로즈업(0~2s) → 와이드 벤치클리어링(2~4s) → START!!(4~5s)
+ * 컷신 6.2초: 휘슬(0~1.2s) → 클로즈업(1.2~3.2s) → 와이드 벤치클리어링(3.2~5.2s) → START!!(5.2~6.2s)
+ * (휘슬 장면은 "이의 있음"이 모여 판정이 시작되는 순간 심판이 호루라기를 부는 연출. 휘슬 효과음은 sound/whistle.mp3) 클로즈업(0~2s) → 와이드 벤치클리어링(2~4s) → START!!(4~5s)
  * 장면은 battle.cutsceneAt 기준 서버 시각 경과로 정하므로 폰끼리 싱크가 맞는다.
  * team: 클로즈업에 나올 팀 id. fullscreen: 폰에서는 화면 전체 오버레이.
  */
@@ -156,7 +198,7 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
   const canvasRef = useRef(null);
   const boxRef = useRef(null);
   const flashRef = useRef(null);
-  const [scene, setScene] = useState('closeup');
+  const [scene, setScene] = useState('whistle');
   const players = useMemo(makePlayers, []);
 
   const ids = Object.keys(game.teams);
@@ -180,11 +222,18 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
     }
 
     let raf = 0;
-    let lastScene = 'closeup';
+    let lastScene = 'whistle';
+    let whistled = false;
 
     const frame = () => {
       const t = Math.max(0, (serverNow() - battle.cutsceneAt) / 1000);
-      const nextScene = t < CLOSEUP_END ? 'closeup' : t < WIDE_END ? 'wide' : 'start';
+      const nextScene =
+        t < WHISTLE_END ? 'whistle' : t < CLOSEUP_END ? 'closeup' : t < WIDE_END ? 'wide' : 'start';
+      // 휘슬 효과음: 컷신이 막 시작됐을 때만 (중간에 들어온 기기는 울리지 않는다)
+      if (!whistled) {
+        whistled = true;
+        if (t < 0.6) playEffect('whistle');
+      }
       if (nextScene !== lastScene) {
         lastScene = nextScene;
         setScene(nextScene);
@@ -193,11 +242,14 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
       }
 
       try {
-        if (nextScene === 'closeup') {
+        if (nextScene === 'whistle') {
+          ctx.clearRect(0, 0, W, H);
+          drawWhistle(ctx, t);
+        } else if (nextScene === 'closeup') {
           const blink = t % 1 > 0.88; // 1초마다 눈 깜빡임
           drawCloseup(offCtx, mine.color, mine.sub, blink, t);
           // 아래에서 위로 살짝 줌인 (정수에 가까운 단계로)
-          const s = 1 + Math.round(Math.min(t / CLOSEUP_END, 1) * 6) * 0.02;
+          const s = 1 + Math.round(Math.min((t - WHISTLE_END) / (CLOSEUP_END - WHISTLE_END), 1) * 6) * 0.02;
           ctx.clearRect(0, 0, W, H);
           ctx.drawImage(off, 0, 0, W, H, -((s - 1) * W) / 2, -(s - 1) * H * 0.7, W * s, H * s);
         } else {
@@ -220,7 +272,9 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
         }
       }
       if (flashRef.current) {
-        flashRef.current.style.opacity = t >= WIDE_END && t < WIDE_END + 0.05 ? '1' : '0';
+        const whistleFlash = t >= 0.3 && t < 0.35; // 호루라기를 부는 순간
+        const startFlash = t >= WIDE_END && t < WIDE_END + 0.05; // START!! 순간
+        flashRef.current.style.opacity = whistleFlash || startFlash ? '1' : '0';
       }
 
       if (t < TOTAL + 0.5) raf = requestAnimationFrame(frame);
@@ -233,6 +287,7 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
     <div className={fullscreen ? 'cutscene fullscreen' : 'cutscene inline'}>
       <div className="cutscene-box" ref={boxRef}>
         <canvas ref={canvasRef} className="cutscene-canvas" />
+        {scene === 'whistle' && <div className="cut-whistle">삐—익!</div>}
         {scene === 'wide' && <div className="cut-label">벤치클리어링!</div>}
         {scene === 'start' && <div className="cut-start">START!!</div>}
         <div className="cut-flash" ref={flashRef} />

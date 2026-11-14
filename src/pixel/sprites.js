@@ -112,3 +112,52 @@ export const BANG = [
   '.y.y.y.',
   'y..y..y',
 ];
+
+// ---------------------------------------------------------------- 심판 (휘슬 연출)
+// 좌우 대칭이라 왼쪽 반(8칸)만 적고 뒤집어 붙인다. 일반적인 야구 심판 복장: 검정/남색 모자와 셔츠, 회색 바지.
+const mirror = (half) => half.map((r) => r + [...r].reverse().join(''));
+
+export const UMPIRE = mirror([
+  '.....kkk', // 모자 윗부분
+  '...kcccc',
+  '..kccccc',
+  '..kccccc',
+  '.kdddddd', // 챙
+  '.kkkkkkk',
+  '..ksssss', // 얼굴
+  '..ksskss',
+  '..ksssss',
+  '..kssSss',
+  '...kssss',
+  '....kkkk', // 턱
+  '.kcccccc', // 셔츠
+  'kccccccc',
+  'kcccccww', // 흰 칼라
+  'kccccccw',
+  'ksskcccc', // 손
+  'kkkkcccc',
+  '..kggggg', // 회색 바지
+  '..kggggg',
+  '..kgggg.',
+  '..kgggg.',
+  '..kkkkk.', // 신발
+]);
+
+export const UMPIRE_PALETTE = {
+  k: '#0b0c14',
+  c: '#2a3152', // 남색 모자·셔츠
+  d: '#171b30', // 모자 챙
+  s: '#e8bf9f',
+  S: '#c99a7c',
+  w: '#f4f4f4',
+  g: '#8a93a6',
+  y: '#ffd23f',
+};
+
+// 입에 문 호루라기 (y = 노랑)
+export const WHISTLE = [
+  '.kkkk.',
+  'kyyyyk',
+  'kyykkk',
+  '.kkk..',
+];

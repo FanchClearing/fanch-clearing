@@ -19,7 +19,7 @@
                                      │
                                      ├ 평소: 응원 모드 (phase = idle)  흔들기/누르기로 팀 응원 점수 ↑, 밀어내기 바
                                      └ 이의 있음이 기준 인원 이상 모이거나 [벤치클리어링 시작]
-                                          └▶ 컷신 5초(cutscene) ▶ 배틀(battle, 기본 10초) ▶ 결과 15초(result) ▶ 다시 응원 모드
+                                          └▶ 컷신 6.2초(cutscene, 심판 휘슬 1.2초 + 기존 5초) ▶ 배틀(battle, 기본 10초) ▶ 결과 15초(result) ▶ 다시 응원 모드
 ```
 
 - 이의 있음·벤치클리어링은 **경기 중(live)일 때만** 동작합니다.
@@ -155,7 +155,7 @@ curl -X PUT -H "if-match: <ETag>" \
 
 ```bash
 # battle.json의 ETag를 조회한 뒤
-#   cutsceneAt = 서버시각 + 300 / startAt = cutsceneAt + 5000 / endAt = startAt + battleMs(기본 10000)
+#   cutsceneAt = 서버시각 + 300 / startAt = cutsceneAt + 6200 / endAt = startAt + battleMs(기본 10000)
 curl -X PUT -H "if-match: <battle ETag>" \
   -d '{"state":"cutscene","id":"admin-<고유 문자열>","cutsceneAt":<..>,"startAt":<..>,"endAt":<..>}' \
   "{DB}/rooms/{gameId}/battle.json"
