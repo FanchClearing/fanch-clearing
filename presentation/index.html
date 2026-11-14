@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이의있음! 발표 자료</title>
+<style>
+@font-face{font-family:Galmuri11;font-weight:400;font-display:block;src:url(fonts/Galmuri11.woff2) format('woff2')}
+@font-face{font-family:Galmuri11;font-weight:700;font-display:block;src:url(fonts/Galmuri11-Bold.woff2) format('woff2')}
+:root{--bg:#1a1c2c;--fg:#f4f4f4;--accent:#ffcd75;--line:#333c57;--lg:#c30452;--hh:#ff6600;--blue:#3b5dc9;--green:#38b764;--ink:#000;--dim:#94a0c4}
+*{box-sizing:border-box;border-radius:0}
+html,body{height:100%;margin:0;background:#000;overflow:hidden}
+body{font-family:Galmuri11,ui-monospace,monospace;color:var(--fg);-webkit-font-smoothing:none;word-break:keep-all}
+img{image-rendering:pixelated;display:block}
+a{color:inherit}
+
+/* ---------- 무대: 1280x720을 화면에 맞춰 확대 ---------- */
+.stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform:translate(-50%,-50%) scale(var(--s,1));overflow:hidden;background:var(--bg)}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;padding:48px 72px 64px;background:var(--bg);background-image:linear-gradient(rgba(255,255,255,.035) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.035) 2px,transparent 2px);background-size:32px 32px}
+.slide.on{display:flex}
+.slide.on > *{animation:rise .32s steps(4) both}
+.slide.on > *:nth-child(2){animation-delay:.08s}
+.slide.on > *:nth-child(3){animation-delay:.16s}
+.slide.on > *:nth-child(4){animation-delay:.24s}
+@keyframes rise{from{transform:translateY(16px);opacity:0}}
+.bar{position:absolute;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 72px;font-size:15px;color:var(--dim);z-index:5}
+.bar i{position:absolute;left:0;bottom:0;height:6px;background:var(--accent);width:var(--prog,0%);transition:width .2s steps(4)}
+
+/* ---------- 글자 ---------- */
+.k{display:inline-block;align-self:flex-start;background:var(--accent);color:var(--ink);font-size:17px;padding:3px 12px;border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+h2{margin:14px 0 26px;font-size:46px;font-weight:700;line-height:1.18;letter-spacing:-.5px}
+h2 em,.hl{font-style:normal;color:var(--accent)}
+p{margin:0}
+.lead{font-size:28px;line-height:1.5}
+.note{font-size:20px;color:var(--dim);line-height:1.5}
+.grow{flex:1;min-height:0}
+.row{display:flex;gap:24px}
+.center{align-items:center;justify-content:center}
+
+/* ---------- 픽셀 상자 ---------- */
+.box{border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);background:#23263a;padding:22px 24px}
+.box h3{margin:0 0 10px;font-size:28px;font-weight:700}
+.box p,.box li{font-size:21px;line-height:1.5}
+.box ul{margin:0;padding-left:1.1em}
+.box.y{background:var(--accent);color:var(--ink)}
+.box.b{background:var(--blue)}
+.box.lg{background:var(--lg)}.box.hh{background:var(--hh);color:var(--ink)}
+.num{display:inline-block;min-width:44px;text-align:center;background:var(--ink);color:var(--accent);font-size:26px;padding:2px 8px;margin-bottom:12px}
+.ph{flex:none;border:5px solid var(--ink);box-shadow:6px 6px 0 var(--ink);background:var(--ink)}
+.ph img{height:100%;width:auto}
+.cap{font-size:19px;text-align:center;margin-top:14px;line-height:1.35}
+.cap b{color:var(--accent);font-weight:400}
+.arr{align-self:center;font-size:34px;color:var(--accent);flex:none;margin-bottom:60px}
+.shot{flex:none;display:flex;flex-direction:column;align-items:center}
+
+/* ---------- 밀어내기 바 ---------- */
+.tug{position:relative;height:44px;border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);background:var(--hh);overflow:hidden}
+.tug::before,.tug b::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 12px,rgba(0,0,0,.18) 12px 16px)}
+.tug::before{animation:pl .5s steps(4) infinite}
+.tug b{position:absolute;left:-16px;top:0;bottom:0;background:var(--lg);animation:sway 5s steps(24) infinite,jit .16s steps(1) infinite}
+.tug b::before{animation:pr .5s steps(4) infinite}
+.tug b::after{content:"";position:absolute;right:0;top:0;bottom:0;width:6px;background:#fff;box-shadow:-4px 0 0 var(--ink),4px 0 0 var(--ink)}
+@keyframes pr{to{background-position:16px 0}}
+@keyframes pl{to{background-position:-16px 0}}
+@keyframes sway{0%,100%{width:52%}25%{width:64%}55%{width:41%}80%{width:57%}}
+@keyframes jit{0%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- 1 표지 ---------- */
+.cover{flex-direction:row!important;align-items:center;gap:56px;padding-right:96px}
+.cover .txt{flex:1;display:flex;flex-direction:column;gap:22px}
+.logo{margin:0;font-size:132px;font-weight:700;line-height:1;color:var(--accent);text-shadow:8px 8px 0 var(--ink);animation:wob .5s steps(2) infinite;transform-origin:20% 60%}
+@keyframes wob{50%{transform:rotate(-2deg) translateY(-4px)}}
+.cover .sub{font-size:34px}
+.cover .ph{height:540px;animation:shk .12s steps(2) infinite}
+@keyframes shk{0%{transform:translate(3px,-3px) rotate(3deg)}50%{transform:translate(-3px,3px) rotate(3deg)}}
+
+/* ---------- 2 문제 ---------- */
+.shout{font-size:150px;font-weight:700;line-height:1;color:var(--fg);text-shadow:8px 8px 0 var(--lg)}
+.opts{display:flex;gap:28px;margin-top:8px}
+.opts .box{flex:1;font-size:34px;text-align:center;padding:30px 12px}
+.opts .box small{display:block;font-size:19px;color:var(--dim);margin-top:8px}
+
+/* ---------- 4 흐름 ---------- */
+.flow{display:grid;grid-template-columns:1fr 56px 1.5fr 56px 1fr;align-items:center;row-gap:10px}
+.st{border:4px solid var(--ink);box-shadow:6px 6px 0 var(--ink);padding:16px 10px;text-align:center;font-size:27px;background:#23263a}
+.st small{display:block;font-size:19px;color:var(--dim);margin-top:6px;line-height:1.35}
+.st.live{background:var(--green);color:var(--ink)}.st.live small{color:#0b3a1c}
+.st.cl{background:var(--accent);color:var(--ink)}.st.cl small{color:#5a4310}
+.ar{text-align:center;font-size:30px;color:var(--accent)}
+.loop{grid-column:1 / -1;display:grid;grid-template-columns:1fr 44px 1fr 44px 1fr;align-items:center;border:4px dashed var(--accent);padding:16px 18px 18px;margin-top:6px;position:relative}
+.loop .ttl{position:absolute;top:-17px;left:18px;background:var(--bg);padding:0 10px;font-size:20px;color:var(--accent)}
+.updown{grid-column:1 / -1;display:flex;justify-content:center;gap:40px;font-size:20px;color:var(--fg);padding:4px 0}
+.updown span b{color:var(--accent);font-weight:400}
+
+/* ---------- 8 쓸데없음 x 쓸모 ---------- */
+.vs{display:grid;grid-template-columns:1fr 72px 1fr;align-items:stretch}
+.vs .x{align-self:center;text-align:center;font-size:54px;color:var(--accent)}
+.vs .box{padding:30px 34px}
+.vs .box h3{font-size:46px;margin-bottom:26px}
+.vs .box li{font-size:29px;margin-bottom:22px}
+
+/* ---------- 9 기술 ---------- */
+.tech{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.tech .box{padding:18px 20px}
+.tech .box h3{font-size:23px;color:var(--accent)}
+.tech .box p{font-size:19px}
+.stack{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.stack span{font-size:20px;background:var(--blue);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);padding:4px 14px}
+
+/* ---------- 11 데모 ---------- */
+.demo{display:grid;grid-template-columns:400px 1fr;gap:56px;align-items:center}
+.qr{background:#fff;border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);padding:14px;text-align:center;color:var(--ink)}
+.qr img{width:100%;height:auto}
+.qr p{font-size:19px;margin-top:6px;word-break:break-all}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.steps li{display:flex;align-items:center;gap:16px;font-size:28px}
+.steps li i{font-style:normal;flex:none;width:46px;height:46px;display:grid;place-items:center;background:var(--accent);color:var(--ink);border:3px solid var(--ink);box-shadow:3px 3px 0 var(--ink);font-size:24px}
+.btn{display:inline-block;text-decoration:none;background:var(--blue);border:4px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:8px 20px;font-size:22px;margin-top:26px}
+.fine{font-size:22px;color:var(--dim);margin-top:auto;text-align:center}
+
+/* ---------- 인쇄: 한 장에 한 슬라이드 ---------- */
+@media print{
+  @page{size:1280px 720px;margin:0}
+  html,body{height:auto;overflow:visible;background:#fff}
+  .stage{position:static;transform:none;width:1280px;height:auto;overflow:visible}
+  .slide{position:relative;display:flex;width:1280px;height:720px;break-after:page;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .slide > *{animation:none!important}
+  .bar{display:none}
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+
+  <!-- 1 표지 -->
+  <section class="slide cover">
+    <div class="txt">
+      <span class="k">젝커톤 2팀 · FanchClearing</span>
+      <h1 class="logo">이의있음!</h1>
+      <p class="sub">억울한 판정, 이제 <span class="hl">흔들어서</span> 따진다</p>
+      <div class="tug" style="margin-top:14px"><b></b></div>
+      <p class="note">세상에서 가장 쓸데없지만, 쓸모 있는 스포츠 서비스</p>
+    </div>
+    <div class="ph"><img src="shots/06-battle.png" alt="흔들기 배틀 화면"></div>
+  </section>
+
+  <!-- 2 문제 -->
+  <section class="slide">
+    <span class="k">문제</span>
+    <h2>야구를 보다가 이런 순간이 온다</h2>
+    <div class="grow row center"><p class="shout">"오심이다!"</p></div>
+    <p class="lead">그런데 팬이 할 수 있는 건 두 가지뿐이다.</p>
+    <div class="opts">
+      <div class="box">소리 지르기<small>옆 사람만 듣는다</small></div>
+      <div class="box">커뮤니티에 글 쓰기<small>경기는 이미 다음 타석이다</small></div>
+    </div>
+  </section>
+
+  <!-- 3 해결 -->
+  <section class="slide">
+    <span class="k">해결</span>
+    <h2>그 순간, 팬이 직접 <em>참전</em>한다</h2>
+    <div class="row grow" style="align-items:stretch">
+      <div class="box" style="flex:1"><span class="num">1</span><h3>QR로 입장</h3><p>전광판의 QR을 찍고 응원할 팀을 고른다. 앱 설치도 가입도 없다.</p></div>
+      <div class="box y" style="flex:1"><span class="num">2</span><h3>[이의 있음!]</h3><p>억울한 판정이 나오면 버튼을 누른다. 10초 안에 기준 인원이 모이면 벤치클리어링이 시작된다.</p></div>
+      <div class="box b" style="flex:1"><span class="num">3</span><h3>흔들어서 승부</h3><p>양 팀 팬이 10초 동안 휴대폰을 흔든다. 더 많이 흔든 팀 팬이 이긴다.</p></div>
+    </div>
+    <p class="lead" style="margin-top:30px;text-align:center">판정은 바뀌지 않는다. 하지만 <span class="hl">팬끼리는 확실하게 승부가 난다.</span></p>
+  </section>
+
+  <!-- 4 흐름 -->
+  <section class="slide">
+    <span class="k">한 경기의 흐름</span>
+    <h2>평소엔 응원, 억울하면 <em>벤치클리어링</em></h2>
+    <div class="flow">
+      <div class="st">시작 전<small>QR로 입장, 팀 선택</small></div>
+      <div class="ar">→</div>
+      <div class="st live">응원 중<small>흔들 때마다 응원 점수가 쌓인다<br>경기 내내 누적</small></div>
+      <div class="ar">→</div>
+      <div class="st">경기 종료<small>응원 점수로 승리 팬 발표</small></div>
+      <div class="updown">
+        <span>↓ <b>[이의 있음!]</b> 기준 인원 충족, 또는 운영자의 [벤치클리어링 시작]</span>
+        <span>↑ 끝나면 다시 응원으로</span>
+      </div>
+      <div class="loop">
+        <span class="ttl">벤치클리어링 한 판</span>
+        <div class="st cl">컷신 5초<small>노려보기 → 몰려나오기 → START!!</small></div>
+        <div class="ar">→</div>
+        <div class="st cl">흔들기 배틀 10초<small>배틀 점수는 매번 0에서 시작</small></div>
+        <div class="ar">→</div>
+        <div class="st cl">결과 15초<small>팬심 판정문, MVP 흔들러 TOP 3</small></div>
+      </div>
+    </div>
+    <p class="note" style="margin-top:22px">실제 경기 데이터와 연동하지 않아서, 경기 시작과 종료는 운영자가 버튼으로 바꾼다.</p>
+  </section>
+
+  <!-- 5 팬 화면: 입장과 응원 -->
+  <section class="slide">
+    <span class="k">팬 화면 1</span>
+    <h2>들어와서, 팀 고르고, <em>흔들어 응원</em></h2>
+    <div class="row grow center" style="gap:18px">
+      <div class="shot"><div class="ph" style="height:360px"><img src="shots/01-home.png" alt="홈"></div><p class="cap">홈</p></div>
+      <div class="arr">→</div>
+      <div class="shot"><div class="ph" style="height:360px"><img src="shots/03-games.png" alt="경기 선택"></div><p class="cap">경기 선택</p></div>
+      <div class="arr">→</div>
+      <div class="shot"><div class="ph" style="height:360px"><img src="shots/04-team.png" alt="팀 선택"></div><p class="cap">팀 선택</p></div>
+      <div class="arr">→</div>
+      <div class="shot"><div class="ph" style="height:360px"><img src="shots/05-cheer.png" alt="응원 화면"></div><p class="cap"><b>응원 중</b></p></div>
+    </div>
+    <p class="lead" style="text-align:center;font-size:24px">응원 화면: <span class="hl">밀어내기 바</span> · 내 응원 점수 · 아래에 [이의 있음!]과 n / 기준</p>
+  </section>
+
+  <!-- 6 팬 화면: 벤치클리어링 -->
+  <section class="slide">
+    <span class="k">팬 화면 2</span>
+    <h2>기준 인원이 모이면 <em>모든 폰에서 동시에</em></h2>
+    <div class="row grow center" style="gap:18px">
+      <div class="shot"><div class="ph" style="height:340px"><img src="shots/07-cut-closeup.png" alt="컷신 노려보기"></div><p class="cap">노려보기<br>2초</p></div>
+      <div class="arr">→</div>
+      <div class="shot"><div class="ph" style="height:340px"><img src="shots/08-cut-wide.png" alt="컷신 벤치클리어링"></div><p class="cap">벤치클리어링<br>2초</p></div>
+      <div class="arr">→</div>
+      <div class="shot"><div class="ph" style="height:340px"><img src="shots/09-cut-start.png" alt="컷신 START"></div><p class="cap">START!!<br>1초</p></div>
+      <div class="arr">→</div>
+      <div class="shot"><div class="ph" style="height:340px"><img src="shots/06-battle.png" alt="흔들기 배틀"></div><p class="cap"><b>흔들기 배틀</b><br>10초</p></div>
+    </div>
+    <p class="lead" style="text-align:center;font-size:24px">끝나면 <span class="hl">결과</span>: 팬심 판정문 · 팀 점수 · 내 기록 · MVP 흔들러 TOP 3 → 15초 뒤 다시 응원으로</p>
+  </section>
+
+  <!-- 7 전광판과 운영자 -->
+  <section class="slide">
+    <span class="k">전광판 · 운영자</span>
+    <h2>큰 화면은 보여주고, 운영자가 <em>경기를 조종</em>한다</h2>
+    <div class="row grow" style="align-items:flex-start;gap:36px">
+      <div class="shot" style="align-items:flex-start">
+        <div class="ph" style="height:398px"><img src="shots/10-host.png" alt="전광판 화면"></div>
+        <p class="cap" style="text-align:left"><b>전광판</b> 입장 QR, 팀별 인원, 밀어내기 바, 이의 있음 게이지</p>
+      </div>
+      <div class="shot" style="align-items:flex-start">
+        <div class="ph" style="height:398px;width:330px;overflow:hidden"><img src="shots/11-admin.png" alt="운영자 화면" style="width:100%;height:auto"></div>
+        <p class="cap" style="text-align:left;max-width:330px"><b>운영자</b> 경기 시작·종료, 벤치클리어링 시작, 기준 인원, 배틀 시간</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 쓸데없음 x 쓸모 있음 -->
+  <section class="slide">
+    <span class="k">주제</span>
+    <h2>세상에서 가장 쓸데없지만, <em>쓸모 있는</em></h2>
+    <div class="vs grow">
+      <div class="box">
+        <h3>쓸데없다</h3>
+        <ul>
+          <li>아무리 흔들어도 판정은 안 바뀐다</li>
+          <li>"오심 인정! LG 팬 승리" 판정문은 가짜다</li>
+          <li>이겨도 받는 건 없다</li>
+        </ul>
+      </div>
+      <div class="x">×</div>
+      <div class="box y">
+        <h3>쓸모 있다</h3>
+        <ul>
+          <li>억울함을 풀 곳이 생긴다</li>
+          <li>관중석 전체가 같은 순간에 같이 움직인다</li>
+          <li>QR 하나면 된다. 설치도 가입도 없다</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 만든 방법 -->
+  <section class="slide">
+    <span class="k">만든 방법</span>
+    <h2>서버 코드 없이, <em>웹 주소 하나</em>로</h2>
+    <div class="stack"><span>React + Vite</span><span>Firebase Realtime Database</span><span>Firebase Hosting (HTTPS)</span><span>devicemotion</span><span>canvas</span></div>
+    <div class="tech grow">
+      <div class="box"><h3>실시간 동기화</h3><p>접속 인원, 점수, 경기 상태를 모두 DB 구독으로 맞춘다. 탭을 닫으면 인원에서 바로 빠진다.</p></div>
+      <div class="box"><h3>같은 순간에 같은 장면</h3><p>서버 시각과의 차이를 보정해서, 컷신과 배틀이 모든 폰과 전광판에서 같이 넘어간다.</p></div>
+      <div class="box"><h3>배틀은 한 번만 시작</h3><p>여러 명이 동시에 기준을 넘겨도 transaction으로 한 번만 시작된다.</p></div>
+      <div class="box"><h3>흔들기 감지</h3><p>가속도 변화량이 기준을 넘으면 1점. 0.3초마다 모아서 저장한다.</p></div>
+      <div class="box"><h3>센서가 없어도 참여</h3><p>권한을 거부했거나 센서가 없는 기기에는 연타 버튼이 나온다.</p></div>
+      <div class="box"><h3>이미지 파일 없는 픽셀</h3><p>선수, 구장, 컷신을 문자열 스프라이트로 저해상도 canvas에 그려서 확대한다.</p></div>
+    </div>
+  </section>
+
+  <!-- 10 다음 -->
+  <section class="slide">
+    <span class="k">다음</span>
+    <h2>이번엔 야구 한 경기, <em>다음은</em></h2>
+    <div class="row grow" style="align-items:stretch;flex-wrap:wrap">
+      <div class="box" style="flex:1 1 45%"><h3>판정 순간 자동 감지</h3><p>실제 경기 데이터와 연동해서, 논란 판정이 나오면 [이의 있음!]이 저절로 열린다.</p></div>
+      <div class="box" style="flex:1 1 45%"><h3>다른 종목</h3><p>농구, 배구, 축구. 지금은 "준비중"으로만 보인다.</p></div>
+      <div class="box" style="flex:1 1 45%"><h3>시즌 누적 랭킹</h3><p>어느 팀 팬이 한 시즌 동안 가장 많이 이겼는지.</p></div>
+      <div class="box" style="flex:1 1 45%"><h3>결과 카드 공유</h3><p>"오심 인정! 우리 팬 승리"를 그대로 SNS에.</p></div>
+    </div>
+  </section>
+
+  <!-- 11 데모 -->
+  <section class="slide">
+    <span class="k">데모</span>
+    <h2>지금 <em>같이</em> 해봅시다</h2>
+    <div class="demo grow">
+      <div class="qr"><img src="shots/qr.svg" alt="입장 QR"><p>jeckathon.web.app/game/kbo-lg-hh</p></div>
+      <div>
+        <ol class="steps">
+          <li><i>1</i>QR을 찍는다</li>
+          <li><i>2</i>LG나 한화를 고르고 입장</li>
+          <li><i>3</i>[흔들기 준비]를 눌러 센서를 허용</li>
+          <li><i>4</i>경기가 시작되면 흔들어서 응원</li>
+          <li><i>5</i>억울하면 [이의 있음!]</li>
+        </ol>
+        <a class="btn" href="https://jeckathon.web.app/host/kbo-lg-hh" target="_blank" rel="noopener">전광판 열기</a>
+      </div>
+    </div>
+    <p class="fine">실제 판정은 바뀌지 않습니다 :)</p>
+  </section>
+
+  <div class="bar"><span>이의있음!</span><span id="page"></span><i></i></div>
+</div>
+
+<script>
+const stage = document.getElementById('stage');
+const slides = [...document.querySelectorAll('.slide')];
+let cur = 0;
+
+function fit() {
+  stage.style.setProperty('--s', Math.min(innerWidth / 1280, innerHeight / 720));
+}
+function show(n, push = true) {
+  cur = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach((s, i) => s.classList.toggle('on', i === cur));
+  document.getElementById('page').textContent = `${cur + 1} / ${slides.length}`;
+  stage.style.setProperty('--prog', (cur + 1) / slides.length * 100 + '%');
+  if (push) history.replaceState(null, '', '#' + (cur + 1));
+}
+const next = () => show(cur + 1), prev = () => show(cur - 1);
+
+addEventListener('resize', fit);
+addEventListener('hashchange', () => show((parseInt(location.hash.slice(1), 10) || 1) - 1, false));
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key;
+  if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); prev(); }
+  else if (k === 'Home') show(0);
+  else if (k === 'End') show(slides.length - 1);
+  else if (k === 'f' || k === 'F') document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+});
+// 화면 클릭: 왼쪽 1/3은 이전, 나머지는 다음 (링크 제외)
+addEventListener('click', e => {
+  if (e.target.closest('a')) return;
+  e.clientX < innerWidth / 3 ? prev() : next();
+});
+let tx = null;
+addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+addEventListener('touchend', e => {
+  if (tx === null) return;
+  const dx = e.changedTouches[0].clientX - tx; tx = null;
+  if (Math.abs(dx) > 40) { dx < 0 ? next() : prev(); }
+});
+
+fit();
+show((parseInt(location.hash.slice(1), 10) || 1) - 1, false);
+</script>
+</body>
+</html>

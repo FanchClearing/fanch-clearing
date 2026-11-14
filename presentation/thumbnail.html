@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>이의있음! 대표 썸네일 (600x400)</title>
+<style>
+@font-face{font-family:Galmuri11;font-weight:400;font-display:block;src:url(fonts/Galmuri11.woff2) format('woff2')}
+@font-face{font-family:Galmuri11;font-weight:700;font-display:block;src:url(fonts/Galmuri11-Bold.woff2) format('woff2')}
+*{box-sizing:border-box;border-radius:0}
+html,body{margin:0}
+body{width:600px;height:400px;overflow:hidden;position:relative;font-family:Galmuri11,monospace;color:#f4f4f4;-webkit-font-smoothing:none;word-break:keep-all;background:#1a1c2c;background-image:linear-gradient(rgba(255,255,255,.04) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.04) 2px,transparent 2px);background-size:25px 25px}
+.txt{position:absolute;left:34px;top:54px;width:350px}
+.k{display:inline-block;background:#ffcd75;color:#000;font-size:14px;padding:2px 9px;border:3px solid #000;box-shadow:3px 3px 0 #000}
+h1{margin:16px 0 14px;font-size:76px;font-weight:700;line-height:1;color:#ffcd75;text-shadow:6px 6px 0 #000;letter-spacing:-2px;transform:rotate(-3deg);transform-origin:0 100%}
+p{margin:0;font-size:21px;line-height:1.4}
+p b{color:#ffcd75;font-weight:400}
+.tug{position:relative;height:34px;margin-top:22px;border:4px solid #000;box-shadow:5px 5px 0 #000;background:#ff6600;overflow:hidden}
+.tug::before,.tug i::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 10px,rgba(0,0,0,.18) 10px 14px)}
+.tug i{position:absolute;left:0;top:0;bottom:0;width:58%;background:#c30452}
+.tug i::after{content:"";position:absolute;right:0;top:0;bottom:0;width:5px;background:#fff;box-shadow:-3px 0 0 #000,3px 0 0 #000}
+.tug span{position:absolute;top:50%;transform:translateY(-50%);font-size:16px;z-index:1}
+.tug .l{left:8px}.tug .r{right:8px;color:#000}
+.ph{position:absolute;right:38px;top:26px;height:348px;border:5px solid #000;box-shadow:7px 7px 0 #000;background:#000;transform:rotate(4deg)}
+.ph img{height:100%;display:block;image-rendering:pixelated}
+</style>
+</head>
+<body>
+  <div class="txt">
+    <span class="k">야구 팬 흔들기 대결</span>
+    <h1>이의있음!</h1>
+    <p>억울한 판정,<br>이제 <b>흔들어서</b> 따진다</p>
+    <div class="tug"><i></i><span class="l">LG</span><span class="r">한화</span></div>
+  </div>
+  <div class="ph"><img src="shots/06-battle.png" alt=""></div>
+</body>
+</html>
