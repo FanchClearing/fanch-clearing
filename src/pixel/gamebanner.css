@@ -1,0 +1,23 @@
+/* 경기 시작!/경기 종료! 큰 글자: 화면 전체를 덮고 1.9초 동안 쾅 찍혔다 사라진다 (steps로 뚝뚝 끊기게) */
+.game-banner {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.72);
+  pointer-events: none;
+  animation: gb-box 1.9s steps(1) forwards;
+}
+.game-banner-text {
+  font-size: clamp(48px, 16vw, 150px);
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  animation: gb-slam 0.3s steps(4);
+}
+.game-banner-text.start { color: #ffd23f; text-shadow: 0.06em 0.06em 0 #b13e53, 0.12em 0.12em 0 #000; }
+.game-banner-text.end { color: #ffffff; text-shadow: 0.06em 0.06em 0 #3b5dc9, 0.12em 0.12em 0 #000; }
+@keyframes gb-slam { from { transform: scale(3); opacity: 0; } }
+@keyframes gb-box { 0% { opacity: 1; } 94% { opacity: 1; } 100% { opacity: 0; } }

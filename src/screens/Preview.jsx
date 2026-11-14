@@ -6,11 +6,34 @@ import Cutscene from '../pixel/Cutscene.jsx';
 import Stadium from '../pixel/Stadium.jsx';
 import Battle from './Battle.jsx';
 import Cheer from './Cheer.jsx';
+import GameBanner, { useGameBanner } from '../pixel/GameBanner.jsx';
 import Result from './Result.jsx';
 import { CheerParticles, TAUNT_KINDS } from '../pixel/Effects.jsx';
 import './result.css';
 import './room.css';
 import './cheer.css';
+
+// 경기 시작!/종료! 배너 미리보기: 서버 값이 '처음 도착(진행 중) → 종료 → 시작' 순서로 바뀌는 상황을 흉내 낸다.
+// 처음 도착한 값에는 배너가 뜨지 않고, 이후 변화에만 떠야 한다.
+export function PreviewBanner() {
+  const [state, setState] = useState('wait');
+  const [ready, setReady] = useState(false);
+  const banner = useGameBanner(state, ready);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => { setState('live'); setReady(true); }, 600); // 이미 진행 중인 경기에 들어옴
+    const t2 = setTimeout(() => setState('end'), 3000); // 경기 종료
+    const t3 = setTimeout(() => setState('live'), 6000); // 경기 다시 시작
+    return () => [t1, t2, t3].forEach(clearTimeout);
+  }, []);
+
+  return (
+    <div className="screen">
+      <GameBanner banner={banner} />
+      <p>경기 상태: {ready ? state : '불러오는 중'}</p>
+    </div>
+  );
+}
 
 // 평소 응원 화면 미리보기: [응원!] 버튼(또는 키보드 아무 키)으로 응원 점수를 올려 본다
 export function PreviewCheer() {

@@ -236,12 +236,20 @@ export function useBattlePhase(gameId) {
   const [objections, setObjections] = useState({});
   const [threshold, setThresholdState] = useState(OBJECTION_THRESHOLD);
   const [game, setGame] = useState({ state: 'wait', runId: null });
+  const [gameReady, setGameReady] = useState(false); // 서버의 첫 경기 상태가 도착했는지
   const [now, setNow] = useState(() => serverNow());
 
   useEffect(() => subscribeBattle(gameId, setBattle), [gameId]);
   useEffect(() => subscribeObjections(gameId, setObjections), [gameId]);
   useEffect(() => subscribeThreshold(gameId, setThresholdState), [gameId]);
-  useEffect(() => subscribeGame(gameId, setGame), [gameId]);
+  useEffect(
+    () =>
+      subscribeGame(gameId, (g) => {
+        setGame(g);
+        setGameReady(true);
+      }),
+    [gameId]
+  );
 
   // 100ms마다 서버 시각 기준으로 갱신 (윈도 만료·단계 전환 감지)
   useEffect(() => {
@@ -285,6 +293,7 @@ export function useBattlePhase(gameId) {
     objectionLeftMs,
     threshold,
     gameState: game.state,
+    gameReady,
     runId: game.runId,
   };
 }

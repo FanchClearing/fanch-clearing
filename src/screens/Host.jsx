@@ -11,6 +11,7 @@ import {
 } from '../lib/room.js';
 import Cutscene from '../pixel/Cutscene.jsx';
 import SoundToggle from '../pixel/SoundToggle.jsx';
+import GameBanner, { useGameBanner } from '../pixel/GameBanner.jsx';
 import { sceneFor, useSceneSound } from '../lib/sound.js';
 import PushBar from '../pixel/PushBar.jsx';
 import { CheerParticles, TAUNT_KINDS } from '../pixel/Effects.jsx';
@@ -26,8 +27,9 @@ export default function Host() {
   const { gameId } = useParams();
   const game = getGame(gameId);
   const counts = usePresenceCounts(gameId); // 운영자 가감이 반영된 표시 인원
-  const { phase, battle, now, objectionCount, objectionLeftMs, threshold, gameState, runId } =
+  const { phase, battle, now, objectionCount, objectionLeftMs, threshold, gameState, gameReady, runId } =
     useBattlePhase(gameId);
+  const gameBanner = useGameBanner(gameState, gameReady); // 경기 시작!/종료! 배너
   const battleId = battle && battle.state === 'cutscene' ? battle.id : null;
   const { totals, list } = useShakeScores(gameId, battleId);
   const { totals: cheer } = useCheerScores(gameId, runId);
@@ -63,6 +65,7 @@ export default function Host() {
   return (
     <div className="screen wide host">
       <SoundToggle />
+      <GameBanner banner={gameBanner} />
       <header className="host-head">
         <h1>{A.name} vs {B.name}</h1>
         <div className="host-presence">

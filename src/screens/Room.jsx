@@ -8,6 +8,7 @@ import { showToast } from '../lib/toast.js';
 import { HAPTIC, vibrate } from '../lib/haptics.js';
 import { sceneFor, useSceneSound } from '../lib/sound.js';
 import SoundToggle from '../pixel/SoundToggle.jsx';
+import GameBanner, { useGameBanner } from '../pixel/GameBanner.jsx';
 import {
   OBJECTION_WINDOW_MS,
   SCORE_FLUSH_MS,
@@ -43,8 +44,9 @@ export default function Room() {
   const { gameId } = useParams();
   const game = getGame(gameId);
   const team = getTeam();
-  const { phase, battle, now, objectionCount, objectionLeftMs, threshold, gameState, runId } =
+  const { phase, battle, now, objectionCount, objectionLeftMs, threshold, gameState, gameReady, runId } =
     useBattlePhase(gameId);
+  const gameBanner = useGameBanner(gameState, gameReady); // 경기 시작!/종료! 배너
   const battleId = battle && battle.state === 'cutscene' ? battle.id : null;
   const { totals, list } = useShakeScores(gameId, battleId); // 배틀 점수
   const { totals: cheerTotals, list: cheerList } = useCheerScores(gameId, runId); // 평소 응원 점수
@@ -282,6 +284,7 @@ export default function Room() {
   return (
     <div className="screen">
       <SoundToggle />
+      <GameBanner banner={gameBanner} />
       <Stadium tint={myTeam.color} dim={0.06} />
       <h2 className="room-title">{entries.map(([, t]) => t.name).join(' vs ')}</h2>
 
