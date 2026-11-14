@@ -3,6 +3,7 @@ import { Navigate, useParams } from 'react-router-dom';
 import { getGame } from '../data/games.js';
 import { getNickname, getTeam, getUid } from '../lib/identity.js';
 import { serverNow } from '../lib/serverTime.js';
+import { showToast } from '../lib/toast.js';
 import { requestShakePermission, startShake } from '../lib/shake.js';
 import {
   OBJECTION_THRESHOLD,
@@ -37,7 +38,6 @@ export default function Room() {
   const battleId = battle && battle.state === 'cutscene' ? battle.id : null;
   const { totals, list } = useShakeScores(gameId, battleId);
 
-  const [toast, setToast] = useState('');
   const [sensor, setSensor] = useState('off'); // off | ready | denied | none
   const [myCount, setMyCount] = useState(0);
 
@@ -53,18 +53,29 @@ export default function Room() {
     return joinRoom(gameId, { uid: getUid(), team, nickname: getNickname() });
   }, [gameId, team, valid]);
 
-  useEffect(() => {
-    if (!toast) return undefined;
-    const t = setTimeout(() => setToast(''), 2000);
-    return () => clearTimeout(t);
-  }, [toast]);
-
   // 새 배틀이 시작되면 내 카운트 초기화
   useEffect(() => {
     countRef.current = 0;
     sentRef.current = -1;
     setMyCount(0);
   }, [battleId]);
+
+  // 배틀 도중 새로고침/재입장하면 서버에 저장된 내 점수에서 이어간다
+  useEffect(() => {
+    if (!battleId) return;
+    const me = list.find((p) => p.uid === getUid());
+    if (me && (me.count || 0) > countRef.current) {
+      countRef.current = me.count;
+      sentRef.current = me.count;
+      setMyCount(me.count);
+    }
+  }, [list, battleId]);
+
+  // 안드로이드 등 권한 팝업이 없는 기기는 자동으로 준비 (iOS는 버튼을 눌러야 한다)
+  useEffect(() => {
+    if (typeof DeviceMotionEvent === 'undefined') setSensor('none');
+    else if (typeof DeviceMotionEvent.requestPermission !== 'function') setSensor('ready');
+  }, []);
 
   // 흔들기 1회 = +1. 배틀 시간(startAt~endAt) 안에서만 센다 (서버 시각 기준)
   const addShake = useCallback(() => {
@@ -94,6 +105,7 @@ export default function Room() {
         count: countRef.current,
       }).catch((e) => {
         console.error('점수 저장 실패', e);
+        showToast('점수 저장 실패! 계속 흔들어요');
         sentRef.current = -1;
       });
     };
@@ -112,7 +124,7 @@ export default function Room() {
   const objection = () => {
     addObjection(gameId, getUid(), team).catch((e) => {
       console.error('이의 있음 실패', e);
-      setToast('연결 실패! 다시 눌러주세요');
+      showToast('연결 실패! 다시 눌러주세요');
     });
   };
 
@@ -185,7 +197,6 @@ export default function Room() {
       <p className="me">
         나: {getNickname()} ({game.teams[team].name})
       </p>
-      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }

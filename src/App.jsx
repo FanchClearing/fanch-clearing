@@ -6,10 +6,13 @@ import TeamSelect from './screens/TeamSelect.jsx';
 import Room from './screens/Room.jsx';
 import Host from './screens/Host.jsx';
 import Preview, { PreviewBattle } from './screens/Preview.jsx';
+import ToastHost from './pixel/Toast.jsx';
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <ToastHost />
+      <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/sports" element={<SportSelect />} />
       <Route path="/games/:sport" element={<GameSelect />} />
@@ -23,6 +26,7 @@ export default function App() {
         </>
       )}
       <Route path="*" element={<Home />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }

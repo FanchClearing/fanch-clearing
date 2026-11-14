@@ -13,6 +13,7 @@ import {
   usePresenceCounts,
   useShakeScores,
 } from '../lib/room.js';
+import { showToast } from '../lib/toast.js';
 import Cutscene from '../pixel/Cutscene.jsx';
 import Result from './Result.jsx';
 import './room.css';
@@ -29,21 +30,14 @@ export default function Host() {
   const battleId = battle && battle.state === 'cutscene' ? battle.id : null;
   const { totals, list } = useShakeScores(gameId, battleId);
   const [battleMs, setBattleMs] = useState(10000);
-  const [toast, setToast] = useState('');
 
   useEffect(() => subscribeBattleDuration(gameId, setBattleMs), [gameId]);
-
-  useEffect(() => {
-    if (!toast) return undefined;
-    const t = setTimeout(() => setToast(''), 2000);
-    return () => clearTimeout(t);
-  }, [toast]);
 
   if (!game) return <div className="screen wide">없는 경기입니다</div>;
 
   const run = (fn, msg) => fn().catch((e) => {
     console.error(msg, e);
-    setToast(msg);
+    showToast(msg);
   });
 
   const joinUrl = `${window.location.origin}/game/${gameId}`;
@@ -139,7 +133,6 @@ export default function Host() {
         </div>
       )}
 
-      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }

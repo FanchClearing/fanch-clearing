@@ -1,22 +1,28 @@
+// uid·닉네임·팀은 "탭 단위(sessionStorage)"를 우선하고 localStorage에도 함께 저장한다.
+// 이유: 같은 브라우저에서 탭 여러 개로 데모를 돌릴 때 탭마다 다른 사람으로 인식되어야 한다.
+// 새로고침해도 sessionStorage가 유지되므로 같은 사람으로 복구된다.
 const KEY_UID = 'objection.uid';
 const KEY_NICK = 'objection.nickname';
 const KEY_TEAM = 'objection.team';
 
-function read(key) {
+function safe(fn, fallback = null) {
   try {
-    return localStorage.getItem(key);
+    return fn();
   } catch (e) {
-    console.error('localStorage 읽기 실패', e);
-    return null;
+    console.error('저장소 접근 실패', e);
+    return fallback;
   }
 }
 
-function write(key, value) {
-  try {
-    localStorage.setItem(key, value);
-  } catch (e) {
-    console.error('localStorage 쓰기 실패', e);
-  }
+const sGet = (k) => safe(() => sessionStorage.getItem(k));
+const sSet = (k, v) => safe(() => sessionStorage.setItem(k, v));
+const lGet = (k) => safe(() => localStorage.getItem(k));
+const lSet = (k, v) => safe(() => localStorage.setItem(k, v));
+
+const readScoped = (k) => sGet(k) ?? lGet(k);
+function writeScoped(k, v) {
+  sSet(k, v);
+  lSet(k, v);
 }
 
 function randomId() {
@@ -27,34 +33,37 @@ export function makeDefaultNickname() {
   return '흔들왕' + String(Math.floor(Math.random() * 1000)).padStart(3, '0');
 }
 
+let memoryUid = null; // 저장소가 막힌 환경(시크릿 모드 등)용
+
 export function getUid() {
-  let uid = read(KEY_UID);
+  let uid = sGet(KEY_UID) || memoryUid;
   if (!uid) {
     uid = randomId();
-    write(KEY_UID, uid);
+    memoryUid = uid;
+    sSet(KEY_UID, uid);
   }
   return uid;
 }
 
 export function getNickname() {
-  let nick = read(KEY_NICK);
+  let nick = readScoped(KEY_NICK);
   if (!nick) {
     nick = makeDefaultNickname();
-    write(KEY_NICK, nick);
+    writeScoped(KEY_NICK, nick);
   }
   return nick;
 }
 
 export function setNickname(nick) {
   const clean = (nick || '').trim().slice(0, 8);
-  write(KEY_NICK, clean || makeDefaultNickname());
+  writeScoped(KEY_NICK, clean || makeDefaultNickname());
   return getNickname();
 }
 
 export function getTeam() {
-  return read(KEY_TEAM);
+  return readScoped(KEY_TEAM);
 }
 
 export function setTeam(teamId) {
-  write(KEY_TEAM, teamId);
+  writeScoped(KEY_TEAM, teamId);
 }

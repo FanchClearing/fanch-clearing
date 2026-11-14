@@ -12,6 +12,7 @@ import {
 } from 'firebase/database';
 import { db } from '../firebase.js';
 import { serverNow } from './serverTime.js';
+import { showToast } from './toast.js';
 
 export const OBJECTION_WINDOW_MS = 10000;
 export const OBJECTION_THRESHOLD = 3;
@@ -77,7 +78,10 @@ export function joinRoom(gameId, { uid, team, nickname }) {
     onDisconnect(myRef)
       .remove()
       .then(() => set(myRef, { team, nickname, joinedAt: serverTimestamp() }))
-      .catch((e) => console.error('presence 등록 실패', e));
+      .catch((e) => {
+        console.error('presence 등록 실패', e);
+        showToast('방 접속에 문제가 있어요');
+      });
   });
 
   return () => {
@@ -227,7 +231,10 @@ export function useBattlePhase(gameId) {
   const triggerKey = canTrigger ? 'go' : 'wait';
   useEffect(() => {
     if (triggerKey !== 'go') return;
-    startBattle(gameId).catch((e) => console.error('배틀 시작 실패', e));
+    startBattle(gameId).catch((e) => {
+      console.error('배틀 시작 실패', e);
+      showToast('판정 시작 실패! 다시 눌러주세요');
+    });
   }, [triggerKey, gameId]);
 
   // 결과 시간이 끝난 배틀은 idle로 리셋
