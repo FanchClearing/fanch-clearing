@@ -190,7 +190,18 @@ export async function resetBattle(gameId, battleId) {
   }
 }
 
-function computePhase(battle, now) {
+/** 운영자용: 배틀 id를 몰라도 현재 배틀을 끝내고 idle로 되돌린다 (이의 있음 기록도 삭제) */
+export async function resetCurrentBattle(gameId) {
+  if (!db) throw new Error('서버 연결 없음');
+  const result = await runTransaction(ref(db, battlePath(gameId)), (cur) => {
+    if (cur && cur.state === 'cutscene') return { state: 'idle' };
+    return undefined;
+  });
+  if (result.committed) await remove(ref(db, objectionsPath(gameId)));
+  return result.committed;
+}
+
+export function computePhase(battle, now) {
   if (!battle || battle.state !== 'cutscene') return 'idle';
   if (now < battle.startAt) return 'cutscene';
   if (now < battle.endAt) return 'battle';

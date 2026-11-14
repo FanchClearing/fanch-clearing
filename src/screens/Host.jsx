@@ -15,6 +15,7 @@ import {
 } from '../lib/room.js';
 import { showToast } from '../lib/toast.js';
 import Cutscene from '../pixel/Cutscene.jsx';
+import PushBar from '../pixel/PushBar.jsx';
 import Result from './Result.jsx';
 import './room.css';
 import './battle.css';
@@ -45,7 +46,6 @@ export default function Host() {
   const [aId, bId] = ids;
   const a = totals[aId] || 0;
   const b = totals[bId] || 0;
-  const ratio = a + b === 0 ? 50 : (a / (a + b)) * 100;
   const secLeft = (ms) => Math.max(0, Math.ceil(ms / 1000));
 
   return (
@@ -110,10 +110,13 @@ export default function Host() {
       {phase === 'battle' && (
         <div className="host-battle">
           <div className="host-timer">{secLeft(battle.endAt - now)}</div>
-          <div className="tug big-tug">
-            <div className="tug-mine" style={{ width: `${ratio}%`, background: game.teams[aId].color }} />
-            <div className="tug-opp" style={{ background: game.teams[bId].color }} />
-          </div>
+          <PushBar
+            scoreA={a}
+            scoreB={b}
+            colorA={game.teams[aId].color}
+            colorB={game.teams[bId].color}
+            height={72}
+          />
           <div className="host-totals">
             <span>{game.teams[aId].name} {a}</span>
             <span>{b} {game.teams[bId].name}</span>

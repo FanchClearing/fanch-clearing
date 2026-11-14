@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { serverNow } from '../lib/serverTime.js';
+import { HAPTIC, vibrate } from '../lib/haptics.js';
 import { rect, seededRandom, setupCanvas } from './draw.js';
 import { STADIUM_H, STADIUM_W, drawStadium } from './Stadium.jsx';
 import './cutscene.css';
@@ -187,6 +188,8 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
       if (nextScene !== lastScene) {
         lastScene = nextScene;
         setScene(nextScene);
+        // START!! 순간: 폰에서만 세 번 진동 (호스트 대형 화면에서는 울리지 않는다)
+        if (nextScene === 'start' && fullscreen) vibrate(HAPTIC.start);
       }
 
       try {
@@ -224,7 +227,7 @@ export default function Cutscene({ game, team, battle, fullscreen = true }) {
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [battle.cutsceneAt, mine, other, players]);
+  }, [battle.cutsceneAt, mine, other, players, fullscreen]);
 
   return (
     <div className={fullscreen ? 'cutscene fullscreen' : 'cutscene inline'}>

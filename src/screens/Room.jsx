@@ -4,6 +4,7 @@ import { getGame } from '../data/games.js';
 import { getNickname, getTeam, getUid } from '../lib/identity.js';
 import { serverNow } from '../lib/serverTime.js';
 import { showToast } from '../lib/toast.js';
+import { HAPTIC, vibrate } from '../lib/haptics.js';
 import { requestShakePermission, startShake } from '../lib/shake.js';
 import {
   OBJECTION_THRESHOLD,
@@ -85,7 +86,15 @@ export default function Room() {
     if (t < b.startAt || t >= b.endAt) return;
     countRef.current += 1;
     setMyCount(countRef.current);
+    vibrate(HAPTIC.shake); // 흔들 때마다 짧게 "웅"
   }, []);
+
+  // 배틀이 끝나 결과로 넘어가는 순간 크게 한 번 (중간에 들어온 폰은 울리지 않는다)
+  const prevPhase = useRef(phase);
+  useEffect(() => {
+    if (prevPhase.current === 'battle' && phase === 'result') vibrate(HAPTIC.end);
+    prevPhase.current = phase;
+  }, [phase]);
 
   // 센서 감지
   useEffect(() => {
