@@ -82,7 +82,7 @@ export default function Stadium({ dim = 0.35, tint = null }) {
     <div className="stadium-wrap" aria-hidden="true">
       <canvas ref={ref} className="stadium-canvas" />
       <div className="stadium-dim" style={{ background: `rgba(26, 28, 44, ${dim})` }} />
-      {tint && <div className="stadium-dim" style={{ background: tint, opacity: 0.22 }} />}
+      {tint && <div className="stadium-dim" style={{ background: tint, opacity: 0.12 }} />}
     </div>
   );
 }

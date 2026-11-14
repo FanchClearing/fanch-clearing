@@ -13,3 +13,8 @@
 .dot { display: inline-block; width: 12px; height: 12px; margin-right: 8px; }
 .countdown { color: var(--accent); margin: 8px 0 0; }
 .disclaimer { font-size: 12px; color: #94b0c2; margin: 0; }
+
+/* 이긴 팀 "메롱" 놀리기 버튼: 결과 화면 하단 고정 */
+.taunt-bar { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); width: min(100vw, 430px); padding: 0 16px; z-index: 14; }
+.px-btn.taunt-btn { width: 100%; font-size: 30px; padding: 22px 0; background: #ff5c8a; color: #fff; touch-action: manipulation; user-select: none; }
+.px-btn.taunt-btn small { font-size: 16px; margin-left: 8px; opacity: 0.85; }

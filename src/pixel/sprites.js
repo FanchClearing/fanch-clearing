@@ -34,31 +34,81 @@ export const HOME = [
   '...w...',
 ];
 
-// 야구공 (5x5)
-export const BALL = [
-  '.www.',
-  'wwrww',
-  'wwwww',
-  'wrwww',
-  '.www.',
+// 응원 파티클용 그림 (k = 검은 테두리, x = 팀 컬러, w = 흰색 하이라이트). UI 시안과 같은 모양.
+export const HEART = [
+  '.kk..kk.',
+  'kxxkkxxk',
+  'kxwxxxxk',
+  'kxxxxxxk',
+  '.kxxxxk.',
+  '..kxxk..',
+  '...kk...',
 ];
 
-// 응원 파티클용: 하트(r = 팀 컬러), 응원봉(y = 팀 컬러, k = 손잡이)
-export const HEART = [
-  '.rr.rr.',
-  'rrrrrrr',
-  'rrrrrrr',
-  '.rrrrr.',
-  '..rrr..',
-  '...r...',
+export const BALL = [
+  '..kkkk..',
+  '.kwwwwk.',
+  'kwxwwxwk',
+  'kwxwwxwk',
+  'kwxwwxwk',
+  'kwxwwxwk',
+  '.kwwwwk.',
+  '..kkkk..',
 ];
 
 export const STICK = [
-  '..y..',
-  '.yyy.',
-  '.yyy.',
-  '.yyy.',
-  '..k..',
-  '..k..',
-  '..k..',
+  '.kkkk.',
+  'kxxxxk',
+  'kxwxxk',
+  'kxxxxk',
+  'kxxxxk',
+  '.kxxk.',
+  '.kwwk.',
+  '.kwwk.',
+  '.kwwk.',
+  '..kk..',
+];
+
+// 메롱 얼굴 (x = 이긴 팀 컬러, r = 혀)
+export const TAUNT_FACE = [
+  '..kkkk..',
+  '.kxxxxk.',
+  'kxkxxkxk',
+  'kxxxxxxk',
+  'kxkkkkxk',
+  '.kxrrxk.',
+  '..krrk..',
+  '...kk...',
+];
+
+// 벤치클리어링(배틀) 파티클용: 주먹(x = 팀 컬러), 별, 충돌 표시(y = 노랑)
+export const PARTICLE_FIST = [
+  '.kkkkkk.',
+  'kxkxkxkk',
+  'kxxxxxxk',
+  'kxxxxxxk',
+  'kxxxxxxk',
+  '.kxxxxk.',
+  '.kxxxxk.',
+  '..kkkk..',
+];
+
+export const STAR = [
+  '...k...',
+  '..kxk..',
+  'kkkxkkk',
+  'kxxxxxk',
+  '.kxxxk.',
+  'kxxkxxk',
+  'kkk.kkk',
+];
+
+export const BANG = [
+  'y..y..y',
+  '.y.y.y.',
+  '..yyy..',
+  'yyywyyy',
+  '..yyy..',
+  '.y.y.y.',
+  'y..y..y',
 ];

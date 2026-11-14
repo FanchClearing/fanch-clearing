@@ -446,3 +446,38 @@ export function subscribeCountAdjust(gameId, cb) {
     (e) => console.error('countAdjust 구독 실패', e)
   );
 }
+
+// --------------------------------------------------------------------- taunt
+// 벤치클리어링 결과 후 이긴 팀이 "메롱"을 연타해 상대를 놀리는 기능: taunt/{battleId}/{uid} = { team, count }
+
+const tauntPath = (gameId) => `rooms/${gameId}/taunt`;
+
+export function setMyTaunt(gameId, battleId, uid, data) {
+  if (!db) return Promise.reject(new Error('서버 연결 없음'));
+  return set(ref(db, `${tauntPath(gameId)}/${battleId}/${uid}`), data);
+}
+
+export function subscribeTaunt(gameId, battleId, cb) {
+  if (!db || !battleId) {
+    cb({});
+    return () => {};
+  }
+  return onValue(
+    ref(db, `${tauntPath(gameId)}/${battleId}`),
+    (snap) => cb(snap.val() || {}),
+    (e) => console.error('taunt 구독 실패', e)
+  );
+}
+
+/** 놀린 횟수 합계. others = 나를 뺀 다른 사람들 합(내 것은 화면에서 바로 반영하므로 따로 센다), total = 전체 */
+export function useTauntScores(gameId, battleId, myUid) {
+  const [taunt, setTaunt] = useState({});
+  useEffect(() => subscribeTaunt(gameId, battleId, setTaunt), [gameId, battleId]);
+  let others = 0;
+  let total = 0;
+  Object.entries(taunt).forEach(([uid, t]) => {
+    total += t.count || 0;
+    if (uid !== myUid) others += t.count || 0;
+  });
+  return { others, total };
+}

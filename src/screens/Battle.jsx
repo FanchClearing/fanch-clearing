@@ -1,6 +1,14 @@
 import Stadium from '../pixel/Stadium.jsx';
 import PushBar from '../pixel/PushBar.jsx';
-import { Fists, HitTexts, OpponentCrowd, ShakeBox, SpeedLines } from '../pixel/Effects.jsx';
+import {
+  CLASH_KINDS,
+  CheerParticles,
+  Fists,
+  HitTexts,
+  OpponentCrowd,
+  ShakeBox,
+  SpeedLines,
+} from '../pixel/Effects.jsx';
 import './battle.css';
 
 // 폰 전체를 덮는 1인칭 배틀 화면 (Room 내부에서 사용)
@@ -55,6 +63,8 @@ export default function Battle({ game, team, battle, now, myCount, totals, senso
           </button>
         )}
       </ShakeBox>
+      {/* 벤치클리어링 중 파티클: 주먹·별·충돌 표시가 시안처럼 떠오른다 (응원보다 25% 크게) */}
+      <CheerParticles hit={myCount} color={myColor} kinds={CLASH_KINDS} scale={1.25} inline />
     </div>
   );
 }
