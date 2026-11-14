@@ -1,0 +1,63 @@
+:root {
+  --bg: #1a1c2c;
+  --fg: #f4f4f4;
+  --accent: #ffcd75;
+  --line: #333c57;
+}
+
+* {
+  box-sizing: border-box;
+  image-rendering: pixelated;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Galmuri11', 'Galmuri9', monospace;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* 모바일 세로 기준: 데스크톱에서는 가운데 고정 폭 */
+.screen {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Host 화면은 가로 대형 화면 기준 */
+.screen.wide {
+  max-width: none;
+}
+
+/* 픽셀 테두리 버튼 (4px 계단형 그림자) */
+.px-btn {
+  font-family: inherit;
+  font-size: 18px;
+  color: var(--fg);
+  background: #3b5dc9;
+  border: 0;
+  padding: 12px 20px;
+  box-shadow: 4px 0 0 0 #000, -4px 0 0 0 #000, 0 4px 0 0 #000, 0 -4px 0 0 #000,
+    4px 4px 0 0 #000, -4px 4px 0 0 #000;
+  cursor: pointer;
+}
+
+.px-btn:active {
+  transform: translateY(4px);
+}
+
+.px-btn:disabled {
+  background: #566c86;
+  color: #94b0c2;
+  cursor: not-allowed;
+}
