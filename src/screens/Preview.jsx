@@ -3,7 +3,49 @@ import { useParams } from 'react-router-dom';
 import { GAMES } from '../data/games.js';
 import { serverNow } from '../lib/serverTime.js';
 import Cutscene from '../pixel/Cutscene.jsx';
+import Stadium from '../pixel/Stadium.jsx';
 import Battle from './Battle.jsx';
+import Cheer from './Cheer.jsx';
+import './room.css';
+import './cheer.css';
+
+// 평소 응원 화면 미리보기: [응원!] 버튼(또는 키보드 아무 키)으로 응원 점수를 올려 본다
+export function PreviewCheer() {
+  const game = GAMES[0];
+  const [count, setCount] = useState(0);
+  const [opp, setOpp] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setOpp((n) => n + Math.floor(Math.random() * 3)), 300);
+    const key = () => setCount((n) => n + 1);
+    window.addEventListener('keydown', key);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener('keydown', key);
+    };
+  }, []);
+
+  return (
+    <div className="screen">
+      <Stadium tint={game.teams.lg.color} />
+      <h2 className="room-title">LG vs 한화</h2>
+      <Cheer
+        game={game}
+        team="lg"
+        totals={{ lg: count, hh: opp }}
+        myCount={count}
+        sensorOk={false}
+        onTap={() => setCount((n) => n + 1)}
+        objection={
+          <div className="objection-panel">
+            <button className="px-btn objection-btn small">이의 있음!</button>
+            <p className="gauge-text">이의 있음 1 / 3</p>
+          </div>
+        }
+      />
+    </div>
+  );
+}
 
 // 배틀 이펙트 미리보기: [연타!] 버튼(또는 키보드 아무 키)을 누를 때마다 +1, 상대 점수는 자동으로 오른다
 export function PreviewBattle() {

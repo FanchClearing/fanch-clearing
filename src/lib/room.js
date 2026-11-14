@@ -28,6 +28,13 @@ const objectionsPath = (gameId) => `rooms/${gameId}/objections`;
 const battlePath = (gameId) => `rooms/${gameId}/battle`;
 const shakesPath = (gameId) => `rooms/${gameId}/shakes`;
 const configPath = (gameId) => `rooms/${gameId}/config`;
+const gamePath = (gameId) => `rooms/${gameId}/game`;
+const cheerPath = (gameId) => `rooms/${gameId}/cheer`;
+
+export const THRESHOLD_MIN = 1;
+export const THRESHOLD_MAX = 50;
+export const ADJUST_MIN = -99;
+export const ADJUST_MAX = 99;
 
 function clampBattleMs(ms) {
   const n = Number(ms);
@@ -103,21 +110,28 @@ export function subscribePresence(gameId, cb) {
   );
 }
 
-/** 팀별 접속자 수 { [teamId]: n } 와 전체 수 */
+/**
+ * 팀별 "표시" 접속자 수 { [teamId]: n, total, raw: {실제 접속자 수} }.
+ * 운영자가 정한 가감(config/countAdjust)이 더해진 값이 화면에 보이는 수이고, raw가 실제 수다.
+ */
 export function usePresenceCounts(gameId) {
-  const [counts, setCounts] = useState({ total: 0 });
-  useEffect(() => {
-    if (!gameId) return undefined;
-    return subscribePresence(gameId, (users) => {
-      const next = { total: 0 };
-      Object.values(users).forEach((u) => {
-        next[u.team] = (next[u.team] || 0) + 1;
-        next.total += 1;
-      });
-      setCounts(next);
-    });
-  }, [gameId]);
-  return counts;
+  const [users, setUsers] = useState({});
+  const [adjust, setAdjust] = useState({});
+  useEffect(() => (gameId ? subscribePresence(gameId, setUsers) : undefined), [gameId]);
+  useEffect(() => (gameId ? subscribeCountAdjust(gameId, setAdjust) : undefined), [gameId]);
+
+  const raw = { total: 0 };
+  Object.values(users).forEach((u) => {
+    raw[u.team] = (raw[u.team] || 0) + 1;
+    raw.total += 1;
+  });
+  const shown = { total: 0, raw };
+  new Set([...Object.keys(raw), ...Object.keys(adjust)]).forEach((id) => {
+    if (id === 'total') return;
+    shown[id] = Math.max(0, (raw[id] || 0) + (adjust[id] || 0));
+    shown.total += shown[id];
+  });
+  return shown;
 }
 
 // ---------------------------------------------------------------- objections
@@ -162,6 +176,9 @@ export function subscribeBattle(gameId, cb) {
  */
 export async function startBattle(gameId) {
   if (!db) throw new Error('서버 연결 없음');
+  // 경기가 진행 중(live)일 때만 시작할 수 있다
+  const g = await get(ref(db, gamePath(gameId)));
+  if (!g.val() || g.val().state !== 'live') return false;
   const id = push(ref(db, shakesPath(gameId))).key; // 키만 생성, 쓰지 않음
   const battleMs = await readBattleDuration(gameId);
   const cutsceneAt = serverNow() + 300;
@@ -217,10 +234,14 @@ export function computePhase(battle, now) {
 export function useBattlePhase(gameId) {
   const [battle, setBattle] = useState(null);
   const [objections, setObjections] = useState({});
+  const [threshold, setThresholdState] = useState(OBJECTION_THRESHOLD);
+  const [game, setGame] = useState({ state: 'wait', runId: null });
   const [now, setNow] = useState(() => serverNow());
 
   useEffect(() => subscribeBattle(gameId, setBattle), [gameId]);
   useEffect(() => subscribeObjections(gameId, setObjections), [gameId]);
+  useEffect(() => subscribeThreshold(gameId, setThresholdState), [gameId]);
+  useEffect(() => subscribeGame(gameId, setGame), [gameId]);
 
   // 100ms마다 서버 시각 기준으로 갱신 (윈도 만료·단계 전환 감지)
   useEffect(() => {
@@ -237,8 +258,8 @@ export function useBattlePhase(gameId) {
   const oldest = recent.length ? Math.min(...recent) : null;
   const objectionLeftMs = oldest ? Math.max(0, OBJECTION_WINDOW_MS - (now - oldest)) : 0;
 
-  // 기준 충족 → 트리거 (transaction이 idle일 때만 통과시킨다)
-  const canTrigger = phase === 'idle' && objectionCount >= OBJECTION_THRESHOLD;
+  // 기준 충족 → 트리거 (경기 진행 중이고, transaction이 idle일 때만 통과시킨다)
+  const canTrigger = game.state === 'live' && phase === 'idle' && objectionCount >= threshold;
   const triggerKey = canTrigger ? 'go' : 'wait';
   useEffect(() => {
     if (triggerKey !== 'go') return;
@@ -256,7 +277,16 @@ export function useBattlePhase(gameId) {
     resetBattle(gameId, staleId).catch((e) => console.error('리셋 실패', e));
   }, [staleId, gameId]);
 
-  return { phase, battle, now, objectionCount, objectionLeftMs };
+  return {
+    phase,
+    battle,
+    now,
+    objectionCount,
+    objectionLeftMs,
+    threshold,
+    gameState: game.state,
+    runId: game.runId,
+  };
 }
 
 // -------------------------------------------------------------------- shakes
@@ -294,4 +324,125 @@ export function useShakeScores(gameId, battleId) {
   });
   list.sort((a, b) => (b.count || 0) - (a.count || 0));
   return { totals, list };
+}
+
+// ---------------------------------------------------------------------- game
+// 경기 상태: 'wait'(시작 전) → 'live'(진행 중, 평소 응원 + 이의 있음) → 'end'(종료)
+
+const DEFAULT_GAME = { state: 'wait', runId: null };
+
+/** cb({ state: 'wait'|'live'|'end', runId, startedAt?, endedAt? }) */
+export function subscribeGame(gameId, cb) {
+  if (!db) {
+    cb(DEFAULT_GAME);
+    return () => {};
+  }
+  return onValue(
+    ref(db, gamePath(gameId)),
+    (snap) => cb(snap.val() || DEFAULT_GAME),
+    (e) => console.error('game 구독 실패', e)
+  );
+}
+
+/** 경기 시작: 시작 전/종료 상태에서만. 새 runId가 생겨 응원 점수가 0부터 다시 시작한다 → true/false */
+export async function startGame(gameId) {
+  if (!db) throw new Error('서버 연결 없음');
+  const runId = push(ref(db, cheerPath(gameId))).key;
+  const result = await runTransaction(ref(db, gamePath(gameId)), (cur) => {
+    if (!cur || cur.state !== 'live') return { state: 'live', runId, startedAt: serverNow() };
+    return undefined;
+  });
+  if (result.committed) await remove(ref(db, objectionsPath(gameId)));
+  return result.committed;
+}
+
+/** 경기 종료: 진행 중일 때만 → true/false */
+export async function endGame(gameId) {
+  if (!db) throw new Error('서버 연결 없음');
+  const result = await runTransaction(ref(db, gamePath(gameId)), (cur) => {
+    if (cur && cur.state === 'live') return { ...cur, state: 'end', endedAt: serverNow() };
+    return undefined;
+  });
+  return result.committed;
+}
+
+// --------------------------------------------------------------------- cheer
+// 평소 응원 점수: cheer/{runId}/{uid} = { team, nickname, count } (경기 시작마다 runId가 새로 생긴다)
+
+export function setMyCheer(gameId, runId, uid, data) {
+  if (!db) return Promise.reject(new Error('서버 연결 없음'));
+  return set(ref(db, `${cheerPath(gameId)}/${runId}/${uid}`), data);
+}
+
+export function subscribeCheer(gameId, runId, cb) {
+  if (!db || !runId) {
+    cb({});
+    return () => {};
+  }
+  return onValue(
+    ref(db, `${cheerPath(gameId)}/${runId}`),
+    (snap) => cb(snap.val() || {}),
+    (e) => console.error('cheer 구독 실패', e)
+  );
+}
+
+/** 팀별 응원 합계 { [teamId]: n } 와 참가자 목록 */
+export function useCheerScores(gameId, runId) {
+  const [cheer, setCheer] = useState({});
+  useEffect(() => subscribeCheer(gameId, runId, setCheer), [gameId, runId]);
+
+  const totals = {};
+  const list = Object.entries(cheer).map(([uid, s]) => {
+    totals[s.team] = (totals[s.team] || 0) + (s.count || 0);
+    return { uid, ...s };
+  });
+  list.sort((a, b) => (b.count || 0) - (a.count || 0));
+  return { totals, list };
+}
+
+// -------------------------------------------------------------------- config
+// 운영자 설정: 이의 있음 발동 기준 인원, 표시 인원수 가감
+
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, Math.round(Number(v))));
+
+/** 이의 있음이 몇 명 모이면 컷신+배틀이 시작되는지 (1~50) */
+export function setThreshold(gameId, n) {
+  if (!db) return Promise.reject(new Error('서버 연결 없음'));
+  const v = Number(n);
+  if (!Number.isFinite(v)) return Promise.reject(new Error('숫자가 아닙니다'));
+  return set(ref(db, `${configPath(gameId)}/threshold`), clamp(v, THRESHOLD_MIN, THRESHOLD_MAX));
+}
+
+export function subscribeThreshold(gameId, cb) {
+  if (!db) {
+    cb(OBJECTION_THRESHOLD);
+    return () => {};
+  }
+  return onValue(
+    ref(db, `${configPath(gameId)}/threshold`),
+    (snap) =>
+      cb(snap.val() == null ? OBJECTION_THRESHOLD : clamp(snap.val(), THRESHOLD_MIN, THRESHOLD_MAX)),
+    (e) => console.error('threshold 구독 실패', e)
+  );
+}
+
+/** 화면에 보이는 팀별 인원수에 더할 값 (-99~99). 연출용이라 실제 접속자 수와 다를 수 있다 */
+export function setCountAdjust(gameId, teamId, n) {
+  if (!db) return Promise.reject(new Error('서버 연결 없음'));
+  const v = Number(n);
+  if (!Number.isFinite(v)) return Promise.reject(new Error('숫자가 아닙니다'));
+  return set(ref(db, `${configPath(gameId)}/countAdjust/${teamId}`), clamp(v, ADJUST_MIN, ADJUST_MAX));
+}
+
+/** cb({ [teamId]: 가감값 }) */
+export function subscribeCountAdjust(gameId, cb) {
+  if (!db) {
+    cb({});
+    return () => {};
+  }
+  return onValue(
+    ref(db, `${configPath(gameId)}/countAdjust`),
+    (snap) => cb(snap.val() || {}),
+    (e) => console.error('countAdjust 구독 실패', e)
+  );
 }
