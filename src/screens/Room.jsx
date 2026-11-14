@@ -6,6 +6,8 @@ import { serverNow } from '../lib/serverTime.js';
 import { requestShakePermission, startShake } from '../lib/shake.js';
 import { showToast } from '../lib/toast.js';
 import { HAPTIC, vibrate } from '../lib/haptics.js';
+import { sceneFor, useSceneSound } from '../lib/sound.js';
+import SoundToggle from '../pixel/SoundToggle.jsx';
 import {
   OBJECTION_WINDOW_MS,
   SCORE_FLUSH_MS,
@@ -57,6 +59,9 @@ export default function Room() {
   modeRef.current = { gameState, phase, runId };
 
   const valid = Boolean(game && team && game.teams[team]);
+
+  // 장면에 맞는 음악 (시작·응원: start / 컷신·배틀: battle / 결과·종료: end), 끝나면 반복
+  useSceneSound(valid ? sceneFor(gameState, phase) : null);
 
   useEffect(() => {
     if (!valid) return undefined;
@@ -227,6 +232,7 @@ export default function Room() {
 
   return (
     <div className="screen">
+      <SoundToggle />
       <Stadium tint={myTeam.color} dim={0.06} />
       <h2 className="room-title">{entries.map(([, t]) => t.name).join(' vs ')}</h2>
 

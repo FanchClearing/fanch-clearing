@@ -9,6 +9,8 @@ import {
   useShakeScores,
 } from '../lib/room.js';
 import Cutscene from '../pixel/Cutscene.jsx';
+import SoundToggle from '../pixel/SoundToggle.jsx';
+import { sceneFor, useSceneSound } from '../lib/sound.js';
 import PushBar from '../pixel/PushBar.jsx';
 import Result from './Result.jsx';
 import './room.css';
@@ -27,6 +29,9 @@ export default function Host() {
   const battleId = battle && battle.state === 'cutscene' ? battle.id : null;
   const { totals, list } = useShakeScores(gameId, battleId);
   const { totals: cheer } = useCheerScores(gameId, runId);
+
+  // 전광판에서도 같은 음악을 튼다 (브라우저 정책상 화면을 한 번 눌러야 시작된다)
+  useSceneSound(game ? sceneFor(gameState, phase) : null);
 
   if (!game) return <div className="screen wide">없는 경기입니다</div>;
 
@@ -51,6 +56,7 @@ export default function Host() {
 
   return (
     <div className="screen wide host">
+      <SoundToggle />
       <header className="host-head">
         <h1>{A.name} vs {B.name}</h1>
         <div className="host-presence">
