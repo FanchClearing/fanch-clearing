@@ -8,11 +8,13 @@ import Host from './screens/Host.jsx';
 import Admin from './screens/Admin.jsx';
 import Preview, { PreviewBattle, PreviewCheer, PreviewTaunt } from './screens/Preview.jsx';
 import ToastHost from './pixel/Toast.jsx';
+import UpdateGuard from './pixel/UpdateGuard.jsx';
 
 export default function App() {
   return (
     <>
       <ToastHost />
+      <UpdateGuard />
       <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/sports" element={<SportSelect />} />
