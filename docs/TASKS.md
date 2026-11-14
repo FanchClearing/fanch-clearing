@@ -12,7 +12,7 @@
   `data/games.js`, `lib/identity.js`(uid·닉네임·team localStorage), 홈 → 종목 → 경기 → 팀 선택 → `/room/:gameId` 이동. 픽셀 꾸밈은 최소한으로.
 - [x] **T3 방 입장·접속자 수 (10분)**
   `lib/room.js`에 presence 등록/onDisconnect/구독. Room 화면 상단 팀별 접속자 수. 경기 선택 카드에도 접속자 수.
-- [ ] **T4 서버 시각 + 이의 있음 트리거 (15분)**
+- [x] **T4 서버 시각 + 이의 있음 트리거 (15분)**
   `lib/serverTime.js`, objection 기록·구독·10초 윈도 게이지, 기준 충족 시 battle transaction(`idle`일 때만). 상태 단계 계산 훅 `useBattlePhase(gameId)` → `'idle'|'cutscene'|'battle'|'result'`. 결과 후 자동 리셋.
   이 단계에서는 컷신/배틀/결과를 글자만 있는 임시 화면으로 둔다.
 - [ ] **T5 흔들기 + 점수 동기화 (20분)**

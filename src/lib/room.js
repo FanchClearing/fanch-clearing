@@ -1,9 +1,28 @@
 import { useEffect, useState } from 'react';
-import { ref, set, remove, onValue, onDisconnect, serverTimestamp } from 'firebase/database';
+import {
+  ref,
+  set,
+  push,
+  remove,
+  onValue,
+  onDisconnect,
+  runTransaction,
+  serverTimestamp,
+} from 'firebase/database';
 import { db } from '../firebase.js';
+import { serverNow } from './serverTime.js';
+
+export const OBJECTION_WINDOW_MS = 10000;
+export const OBJECTION_THRESHOLD = 3;
+export const CUTSCENE_MS = 5000;
+export const BATTLE_MS = 10000;
+export const RESULT_MS = 15000;
 
 // DB 경로 문자열은 이 파일 안에서만 쓴다.
 const presencePath = (gameId) => `rooms/${gameId}/presence`;
+const objectionsPath = (gameId) => `rooms/${gameId}/objections`;
+const battlePath = (gameId) => `rooms/${gameId}/battle`;
+const shakesPath = (gameId) => `rooms/${gameId}/shakes`;
 
 /**
  * 방 입장: presence 등록 + 연결 끊김 시 자동 제거.
@@ -56,4 +75,128 @@ export function usePresenceCounts(gameId) {
     });
   }, [gameId]);
   return counts;
+}
+
+// ---------------------------------------------------------------- objections
+
+/** 이의 있음 기록 (다시 누르면 at 갱신) */
+export function addObjection(gameId, uid, team) {
+  if (!db) return Promise.reject(new Error('서버 연결 없음'));
+  return set(ref(db, `${objectionsPath(gameId)}/${uid}`), { team, at: serverTimestamp() });
+}
+
+/** cb({ [uid]: {team, at} }) */
+export function subscribeObjections(gameId, cb) {
+  if (!db) {
+    cb({});
+    return () => {};
+  }
+  return onValue(
+    ref(db, objectionsPath(gameId)),
+    (snap) => cb(snap.val() || {}),
+    (e) => console.error('objections 구독 실패', e)
+  );
+}
+
+// -------------------------------------------------------------------- battle
+
+/** cb(battle | null) */
+export function subscribeBattle(gameId, cb) {
+  if (!db) {
+    cb(null);
+    return () => {};
+  }
+  return onValue(
+    ref(db, battlePath(gameId)),
+    (snap) => cb(snap.val()),
+    (e) => console.error('battle 구독 실패', e)
+  );
+}
+
+/**
+ * 배틀 시작: 현재 idle(또는 없음)일 때만 cutscene으로 바꾼다 (한 번만).
+ * 강제 시작(T7)도 이 함수를 쓴다.
+ */
+export async function startBattle(gameId) {
+  if (!db) throw new Error('서버 연결 없음');
+  const id = push(ref(db, shakesPath(gameId))).key; // 키만 생성, 쓰지 않음
+  const cutsceneAt = serverNow() + 300;
+  const startAt = cutsceneAt + CUTSCENE_MS;
+  const endAt = startAt + BATTLE_MS;
+  const result = await runTransaction(ref(db, battlePath(gameId)), (cur) => {
+    if (!cur || cur.state === 'idle') {
+      return { state: 'cutscene', id, cutsceneAt, startAt, endAt };
+    }
+    return undefined; // 이미 진행 중이면 중단
+  });
+  return result.committed;
+}
+
+/** 결과 후 idle 복귀 + objections 삭제. 같은 배틀에 대해서만 한 번 동작 */
+export async function resetBattle(gameId, battleId) {
+  if (!db) return;
+  const result = await runTransaction(ref(db, battlePath(gameId)), (cur) => {
+    if (cur && cur.state === 'cutscene' && cur.id === battleId) {
+      return { state: 'idle' };
+    }
+    return undefined;
+  });
+  if (result.committed) {
+    await remove(ref(db, objectionsPath(gameId)));
+  }
+}
+
+function computePhase(battle, now) {
+  if (!battle || battle.state !== 'cutscene') return 'idle';
+  if (now < battle.startAt) return 'cutscene';
+  if (now < battle.endAt) return 'battle';
+  if (now < battle.endAt + RESULT_MS) return 'result';
+  return 'idle'; // 결과 시간이 지났으면 리셋 대기
+}
+
+/**
+ * 방의 현재 단계 훅.
+ * phase: 'idle' | 'cutscene' | 'battle' | 'result'
+ * 이의 있음 개수 집계, 기준 충족 시 배틀 트리거, 결과 후 자동 리셋까지 담당한다.
+ */
+export function useBattlePhase(gameId) {
+  const [battle, setBattle] = useState(null);
+  const [objections, setObjections] = useState({});
+  const [now, setNow] = useState(() => serverNow());
+
+  useEffect(() => subscribeBattle(gameId, setBattle), [gameId]);
+  useEffect(() => subscribeObjections(gameId, setObjections), [gameId]);
+
+  // 100ms마다 서버 시각 기준으로 갱신 (윈도 만료·단계 전환 감지)
+  useEffect(() => {
+    const t = setInterval(() => setNow(serverNow()), 100);
+    return () => clearInterval(t);
+  }, []);
+
+  const phase = computePhase(battle, now);
+
+  const recent = Object.values(objections)
+    .map((o) => o.at)
+    .filter((at) => typeof at === 'number' && at > now - OBJECTION_WINDOW_MS);
+  const objectionCount = recent.length;
+  const oldest = recent.length ? Math.min(...recent) : null;
+  const objectionLeftMs = oldest ? Math.max(0, OBJECTION_WINDOW_MS - (now - oldest)) : 0;
+
+  // 기준 충족 → 트리거 (transaction이 idle일 때만 통과시킨다)
+  const canTrigger = phase === 'idle' && objectionCount >= OBJECTION_THRESHOLD;
+  const triggerKey = canTrigger ? 'go' : 'wait';
+  useEffect(() => {
+    if (triggerKey !== 'go') return;
+    startBattle(gameId).catch((e) => console.error('배틀 시작 실패', e));
+  }, [triggerKey, gameId]);
+
+  // 결과 시간이 끝난 배틀은 idle로 리셋
+  const staleId =
+    battle && battle.state === 'cutscene' && now >= battle.endAt + RESULT_MS ? battle.id : null;
+  useEffect(() => {
+    if (!staleId) return;
+    resetBattle(gameId, staleId).catch((e) => console.error('리셋 실패', e));
+  }, [staleId, gameId]);
+
+  return { phase, battle, now, objectionCount, objectionLeftMs };
 }

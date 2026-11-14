@@ -2,3 +2,11 @@
 .presence { display: flex; gap: 8px; justify-content: center; }
 .presence-team { flex: 1; text-align: center; padding: 8px 4px; color: #fff; }
 .me { text-align: center; color: #94b0c2; margin-top: 16px; }
+
+.idle { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 40px; }
+.objection-btn { font-size: 32px; padding: 56px 24px; width: 100%; background: #b13e53; }
+.gauge-text { font-size: 28px; margin: 0; }
+.timebar { width: 100%; height: 16px; background: #000; border: 4px solid var(--line); }
+.timebar-fill { height: 100%; background: var(--accent); }
+.temp { text-align: center; font-size: 32px; margin-top: 80px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #000; border: 4px solid #b13e53; padding: 10px 16px; }
