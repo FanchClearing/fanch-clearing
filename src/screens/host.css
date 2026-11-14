@@ -1,0 +1,22 @@
+.host { padding: 32px 48px; }
+.host-head { display: flex; justify-content: space-between; align-items: center; }
+.host-head h1 { margin: 0; font-size: 40px; }
+.host-presence { display: flex; gap: 16px; font-size: 28px; }
+.host-presence span { padding: 8px 20px; color: #fff; }
+
+.host-idle { display: flex; gap: 64px; align-items: center; justify-content: center; margin-top: 48px; }
+.qr-box { background: #fff; color: #1a1c2c; padding: 24px; text-align: center; }
+.qr-box p { font-size: 28px; margin: 12px 0 4px; }
+.qr-box small { font-size: 12px; word-break: break-all; }
+.host-side { display: flex; flex-direction: column; gap: 24px; min-width: 360px; }
+.host-gauge { font-size: 48px; margin: 0; }
+.host-btn { font-size: 28px; padding: 24px; }
+.duration { font-size: 22px; display: flex; align-items: center; gap: 12px; }
+.duration select { font-family: inherit; font-size: 22px; padding: 6px; background: #000; color: var(--fg); border: 4px solid var(--line); }
+
+.host-big { text-align: center; font-size: 120px; margin-top: 120px; }
+.host-battle { display: flex; flex-direction: column; align-items: center; gap: 32px; margin-top: 48px; }
+.host-timer { font-size: 160px; color: var(--accent); line-height: 1; }
+.big-tug { height: 64px; width: 100%; }
+.host-totals { display: flex; justify-content: space-between; width: 100%; font-size: 64px; }
+.host-result { max-width: 640px; margin: 24px auto 0; display: flex; flex-direction: column; align-items: center; gap: 24px; }

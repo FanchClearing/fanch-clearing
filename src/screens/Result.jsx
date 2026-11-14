@@ -45,9 +45,11 @@ export default function Result({ game, team, battle, now, totals, list, myCount 
         ))}
       </div>
 
-      <p className="mine">
-        내 기록 ({game.teams[team].name}): <strong>{myCount}</strong>번
-      </p>
+      {team && (
+        <p className="mine">
+          내 기록 ({game.teams[team].name}): <strong>{myCount}</strong>번
+        </p>
+      )}
 
       <h3 className="mvp-title">MVP 흔들러 TOP 3</h3>
       <ol className="mvp">
