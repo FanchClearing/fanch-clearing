@@ -10,7 +10,7 @@
   배포는 하지 않는다(T12에서 진행). 개발 중 테스트는 `npm run dev -- --host` + 같은 와이파이 폰 접속, 센서 대신 연타 버튼으로 확인.
 - [x] **T2 선택 화면 S0~S3 (10분)**
   `data/games.js`, `lib/identity.js`(uid·닉네임·team localStorage), 홈 → 종목 → 경기 → 팀 선택 → `/room/:gameId` 이동. 픽셀 꾸밈은 최소한으로.
-- [ ] **T3 방 입장·접속자 수 (10분)**
+- [x] **T3 방 입장·접속자 수 (10분)**
   `lib/room.js`에 presence 등록/onDisconnect/구독. Room 화면 상단 팀별 접속자 수. 경기 선택 카드에도 접속자 수.
 - [ ] **T4 서버 시각 + 이의 있음 트리거 (15분)**
   `lib/serverTime.js`, objection 기록·구독·10초 윈도 게이지, 기준 충족 시 battle transaction(`idle`일 때만). 상태 단계 계산 훅 `useBattlePhase(gameId)` → `'idle'|'cutscene'|'battle'|'result'`. 결과 후 자동 리셋.

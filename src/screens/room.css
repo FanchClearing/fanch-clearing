@@ -1,0 +1,4 @@
+.room-title { text-align: center; margin: 8px 0 12px; }
+.presence { display: flex; gap: 8px; justify-content: center; }
+.presence-team { flex: 1; text-align: center; padding: 8px 4px; color: #fff; }
+.me { text-align: center; color: #94b0c2; margin-top: 16px; }
