@@ -16,6 +16,7 @@ import {
   useShakeScores,
 } from '../lib/room.js';
 import Battle from './Battle.jsx';
+import Result from './Result.jsx';
 import './room.css';
 
 const SENSOR_LABEL = {
@@ -32,7 +33,7 @@ export default function Room() {
   const counts = usePresenceCounts(gameId);
   const { phase, battle, now, objectionCount, objectionLeftMs } = useBattlePhase(gameId);
   const battleId = battle && battle.state === 'cutscene' ? battle.id : null;
-  const { totals } = useShakeScores(gameId, battleId);
+  const { totals, list } = useShakeScores(gameId, battleId);
 
   const [toast, setToast] = useState('');
   const [sensor, setSensor] = useState('off'); // off | ready | denied | none
@@ -149,7 +150,7 @@ export default function Room() {
         </div>
       )}
 
-      {/* T4 임시 화면: 컷신/결과는 이후 작업에서 교체 */}
+      {/* T4 임시 화면: 컷신은 T9에서 교체 */}
       {phase === 'cutscene' && <p className="temp">컷신 {secLeft(battle.startAt - now)}</p>}
       {phase === 'battle' && (
         <Battle
@@ -164,11 +165,15 @@ export default function Room() {
         />
       )}
       {phase === 'result' && (
-        <p className="temp">
-          결과 {secLeft(battle.endAt + 15000 - now)}
-          <br />
-          {Object.entries(totals).map(([id, n]) => `${game.teams[id].name} ${n}`).join(' : ')}
-        </p>
+        <Result
+          game={game}
+          team={team}
+          battle={battle}
+          now={now}
+          totals={totals}
+          list={list}
+          myCount={myCount}
+        />
       )}
 
       <button className="px-btn ready-btn" disabled={sensor !== 'off'} onClick={prepareShake}>

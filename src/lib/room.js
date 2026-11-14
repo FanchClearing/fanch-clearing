@@ -7,6 +7,7 @@ import {
   onValue,
   onDisconnect,
   runTransaction,
+  get,
   serverTimestamp,
 } from 'firebase/database';
 import { db } from '../firebase.js';
@@ -15,7 +16,9 @@ import { serverNow } from './serverTime.js';
 export const OBJECTION_WINDOW_MS = 10000;
 export const OBJECTION_THRESHOLD = 3;
 export const CUTSCENE_MS = 5000;
-export const BATTLE_MS = 10000;
+export const BATTLE_MS = 10000; // 기본값. 운영자가 방 설정으로 바꿀 수 있다
+export const BATTLE_MIN_MS = 5000;
+export const BATTLE_MAX_MS = 60000;
 export const RESULT_MS = 15000;
 
 // DB 경로 문자열은 이 파일 안에서만 쓴다.
@@ -23,6 +26,42 @@ const presencePath = (gameId) => `rooms/${gameId}/presence`;
 const objectionsPath = (gameId) => `rooms/${gameId}/objections`;
 const battlePath = (gameId) => `rooms/${gameId}/battle`;
 const shakesPath = (gameId) => `rooms/${gameId}/shakes`;
+const configPath = (gameId) => `rooms/${gameId}/config`;
+
+function clampBattleMs(ms) {
+  const n = Number(ms);
+  if (!Number.isFinite(n)) return BATTLE_MS;
+  return Math.min(BATTLE_MAX_MS, Math.max(BATTLE_MIN_MS, Math.round(n)));
+}
+
+/** 운영자 설정: 다음 배틀부터 적용되는 배틀 길이(ms) */
+export function setBattleDuration(gameId, ms) {
+  if (!db) return Promise.reject(new Error('서버 연결 없음'));
+  return set(ref(db, `${configPath(gameId)}/battleMs`), clampBattleMs(ms));
+}
+
+/** cb(ms) — 설정이 없으면 기본값 */
+export function subscribeBattleDuration(gameId, cb) {
+  if (!db) {
+    cb(BATTLE_MS);
+    return () => {};
+  }
+  return onValue(
+    ref(db, `${configPath(gameId)}/battleMs`),
+    (snap) => cb(snap.val() == null ? BATTLE_MS : clampBattleMs(snap.val())),
+    (e) => console.error('battleMs 구독 실패', e)
+  );
+}
+
+async function readBattleDuration(gameId) {
+  try {
+    const snap = await get(ref(db, `${configPath(gameId)}/battleMs`));
+    return snap.val() == null ? BATTLE_MS : clampBattleMs(snap.val());
+  } catch (e) {
+    console.error('battleMs 읽기 실패, 기본값 사용', e);
+    return BATTLE_MS;
+  }
+}
 
 /**
  * 방 입장: presence 등록 + 연결 끊김 시 자동 제거.
@@ -120,9 +159,10 @@ export function subscribeBattle(gameId, cb) {
 export async function startBattle(gameId) {
   if (!db) throw new Error('서버 연결 없음');
   const id = push(ref(db, shakesPath(gameId))).key; // 키만 생성, 쓰지 않음
+  const battleMs = await readBattleDuration(gameId);
   const cutsceneAt = serverNow() + 300;
   const startAt = cutsceneAt + CUTSCENE_MS;
-  const endAt = startAt + BATTLE_MS;
+  const endAt = startAt + battleMs;
   const result = await runTransaction(ref(db, battlePath(gameId)), (cur) => {
     if (!cur || cur.state === 'idle') {
       return { state: 'cutscene', id, cutsceneAt, startAt, endAt };
