@@ -38,6 +38,7 @@ import { getGame } from '../data/games.js';
  * status = {
  *   gameId, serverNow,
  *   gameState: 'wait' | 'live' | 'end',   // 경기 시작 전 / 진행 중 / 종료
+ *   startedAt, endedAt,                    // 경기 시작/종료 서버 시각(ms). 없으면 null
  *   phase: 'idle' | 'cutscene' | 'battle' | 'result',  // 경기 진행 중의 세부 단계 (idle = 평소 응원 중)
  *   phaseLeftMs,                 // 현재 단계가 끝날 때까지 남은 시간 (idle이면 0)
  *   battle: {id, cutsceneAt, startAt, endAt} | null,
@@ -108,6 +109,8 @@ export function subscribeAdminStatus(gameId, cb) {
       gameId,
       serverNow: now,
       gameState: gameInfo.state,
+      startedAt: gameInfo.startedAt || null,
+      endedAt: gameInfo.endedAt || null,
       phase,
       phaseLeftMs: Math.max(0, phaseLeftMs),
       battle: battle && battle.state === 'cutscene' ? battle : null,

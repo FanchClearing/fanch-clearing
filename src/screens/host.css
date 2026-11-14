@@ -27,3 +27,63 @@
 
 /* 전광판에서는 소리 버튼을 왼쪽 아래로 (우측 상단의 팀 인원 표시와 겹치지 않게) */
 .host .sound-toggle { top: auto; right: auto; bottom: 8px; left: 8px; }
+
+/* ===== 전광판 새 레이아웃: 왼쪽 메인 + 오른쪽 운영 패널 ===== */
+.hx { display: grid; grid-template-columns: minmax(0, 1fr) clamp(380px, 26vw, 500px); grid-template-rows: auto 1fr; gap: 20px 28px; padding: 20px 28px; align-items: start; }
+.hx-head { grid-column: 1 / -1; display: flex; align-items: center; gap: 24px; }
+.hx-head h1 { margin: 0; font-size: clamp(32px, 3.4vw, 56px); }
+.hx-head h1 small { font-size: 0.5em; color: #c9c6dc; font-weight: 400; }
+.hx-state { background: #566c86; color: #fff; border: 4px solid #000; box-shadow: 4px 4px 0 #000; padding: 4px 16px; font-size: clamp(20px, 2vw, 32px); }
+.hx-state.on { background: #ffd23f; color: #000; }
+.hx-stats { margin-left: auto; display: flex; gap: 28px; font-size: clamp(18px, 1.8vw, 28px); color: #c9c6dc; }
+.hx-stats b { color: #fff; font-weight: 400; }
+.hx-dot { display: inline-block; width: 12px; height: 12px; background: #ff2b2b; margin-right: 6px; animation: sound-blink 1s steps(1) infinite; }
+
+.hx-main { grid-column: 1; display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.hx-side { grid-column: 2; display: flex; flex-direction: column; gap: 16px; }
+
+.hx-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.hx-team { color: #fff; border: 4px solid #000; box-shadow: 6px 6px 0 #000; padding: 14px 20px; text-shadow: 3px 3px 0 #000; }
+.hx-team-name { font-size: clamp(22px, 2.2vw, 36px); display: flex; align-items: center; gap: 14px; }
+.hx-lead { font-weight: 400; font-size: 0.6em; background: #ffd23f; color: #000; text-shadow: none; padding: 2px 10px; border: 3px solid #000; }
+.hx-team-score { font-size: clamp(64px, 8vw, 150px); line-height: 1; margin: 4px 0; }
+.hx-team-live { font-size: clamp(18px, 1.8vw, 28px); display: flex; align-items: center; gap: 10px; }
+.hx-team-live i { width: 14px; height: 14px; background: #ff2b2b; animation: sound-blink 1s steps(1) infinite; }
+
+.hx-lower { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; }
+.hx-obj { flex: 1; }
+.hx-obj small { display: block; margin-top: 10px; color: #c9c6dc; font-size: clamp(14px, 1.2vw, 20px); }
+.hx-wait-count { font-size: 32px; }
+
+/* 오른쪽 패널 */
+.hx-panel { --hi: #ffd23f; --ink: #000; background: #14121f; border: 4px solid #000; box-shadow: 6px 6px 0 #000; padding: 12px 14px; }
+.hx-panel h3 { margin: 0 0 8px; font-size: 18px; font-weight: 400; color: #ffd23f; }
+.hx-empty { margin: 0; color: #8b88a3; font-size: 14px; }
+.hx-mvp { list-style: none; margin: 0; padding: 0; }
+.hx-mvp li { display: flex; align-items: center; gap: 8px; padding: 5px 6px; background: #211f30; margin-bottom: 4px; font-size: 18px; }
+.hx-rank { width: 22px; color: #ffd23f; }
+.hx-dotteam { width: 12px; height: 12px; flex: none; }
+.hx-nick { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hx-mvp em { font-style: normal; color: #ffd23f; }
+.hx-feed { list-style: none; margin: 0; padding: 0; font-size: 16px; }
+.hx-feed li { padding: 3px 0; animation: sound-blink 0.4s steps(2) 2; }
+
+/* 운영 조작부(전광판 안): 버튼을 2열로 촘촘하게 */
+.admin-controls.compact .admin-keys { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.admin-controls.compact .admin-btn { font-size: 16px; padding: 10px 8px; text-align: center; }
+.admin-controls.compact .admin-sub { margin: 12px 0 6px; font-size: 15px; }
+.admin-controls.compact .admin-row { font-size: 14px; margin-bottom: 6px; }
+.admin-controls.compact .stepper b { min-width: 48px; font-size: 16px; }
+.admin-controls.compact .stepper button { width: 34px; height: 34px; font-size: 18px; }
+.admin-controls.compact .admin-duration { font-size: 14px; }
+.admin-controls.compact .admin-duration select { font-size: 15px; }
+
+/* 큰 화면에서 아래가 비지 않게: 메인이 화면 높이를 채우고 팀 카드가 남는 높이를 가져간다 */
+.hx-main { min-height: calc(100vh - 120px); }
+.hx-teams { flex: 1; }
+.hx-team { display: flex; flex-direction: column; justify-content: space-between; }
+.hx-team-score { font-size: clamp(80px, 12vw, 240px); }
+
+/* 세로가 화면을 넘지 않게 높이를 줄이고, 소리 버튼은 오른쪽 아래(빈 곳)로 */
+.hx-main { min-height: calc(100vh - 165px); }
+.host .sound-toggle { left: auto; right: 10px; bottom: 10px; top: auto; }
