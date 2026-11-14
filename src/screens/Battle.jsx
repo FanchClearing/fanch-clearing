@@ -69,8 +69,10 @@ export default function Battle({
 
         <div className="my-count">{myCount}</div>
         <Fists hit={myCount} color={myColor} />
-        {/* 버튼 모양은 안내용이다(눌림은 화면 전체가 받는다). 센서가 되는 폰은 안내 문구만 */}
-        <div className="px-btn tap-btn">{sensorOk ? '흔들거나 화면을 연타!' : '화면을 연타!'}</div>
+        {/* 안내 문구: 아래쪽의 글러브(주먹)를 가리지 않게 점수판 아래에 작게 두고, 몇 번 누르면 사라진다 */}
+        {myCount < 3 && (
+          <div className="tap-hint">{sensorOk ? '흔들거나 화면을 연타!' : '화면을 연타!'}</div>
+        )}
       </ShakeBox>
       {/* 벤치클리어링 중 파티클: 주먹·별·충돌 표시가 올라온다. 참여한 모두의 것이 뜬다 (내 팀은 오른쪽, 상대 팀은 왼쪽) */}
       <CheerParticles hit={hitMine} color={myColor} kinds={CLASH_KINDS} scale={1.25} inline />
