@@ -75,3 +75,6 @@
   75% { transform: translate(var(--dx), calc(var(--h) * -0.75)) scale(1); opacity: 1; }
   100% { transform: translate(0, calc(var(--h) * -1)) scale(0.9); opacity: 0; }
 }
+
+/* 배틀 오버레이(이미 폭이 고정된 상자) 안에서 쓰는 파티클 층 */
+.fx-particles.in-overlay { position: absolute; left: 0; width: 100%; transform: none; }

@@ -227,7 +227,7 @@ export default function Room() {
 
   return (
     <div className="screen">
-      <Stadium tint={myTeam.color} />
+      <Stadium tint={myTeam.color} dim={0.06} />
       <h2 className="room-title">{entries.map(([, t]) => t.name).join(' vs ')}</h2>
 
       {gameState === 'wait' && (

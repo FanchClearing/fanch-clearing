@@ -68,3 +68,35 @@ export const STICK = [
   '.kwwk.',
   '..kk..',
 ];
+
+// 벤치클리어링(배틀) 파티클용: 주먹(x = 팀 컬러), 별, 충돌 표시(y = 노랑)
+export const PARTICLE_FIST = [
+  '.kkkkkk.',
+  'kxkxkxkk',
+  'kxxxxxxk',
+  'kxxxxxxk',
+  'kxxxxxxk',
+  '.kxxxxk.',
+  '.kxxxxk.',
+  '..kkkk..',
+];
+
+export const STAR = [
+  '...k...',
+  '..kxk..',
+  'kkkxkkk',
+  'kxxxxxk',
+  '.kxxxk.',
+  'kxxkxxk',
+  'kkk.kkk',
+];
+
+export const BANG = [
+  'y..y..y',
+  '.y.y.y.',
+  '..yyy..',
+  'yyywyyy',
+  '..yyy..',
+  '.y.y.y.',
+  'y..y..y',
+];

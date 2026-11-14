@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { drawSprite, rect, seededRandom, setupCanvas } from './draw.js';
-import { BALL, HEART, STICK } from './sprites.js';
+import { BALL, BANG, HEART, PARTICLE_FIST, STAR, STICK } from './sprites.js';
 import './effects.css';
 
 const HIT_WORDS = ['퍽!', '쾅!', '이의!', '오심!'];
@@ -181,7 +181,10 @@ export function OpponentCrowd({ color }) {
 // UI 시안과 같은 값: 하트가 가장 자주(2/4), 위치 68~88%, 크기 20~36px, 화면 높이의 55~90%까지 상승,
 // 1.2~1.8초, 동시에 최대 30개.
 
-const CHEER_KINDS = ['heart', 'heart', 'ball', 'stick'];
+export const CHEER_KINDS = ['heart', 'heart', 'ball', 'stick'];
+// 벤치클리어링(배틀) 중: 주먹·별·충돌 표시 (시안과 같은 구성)
+export const CLASH_KINDS = ['fist', 'fist', 'star', 'bang'];
+const SPRITES = { heart: HEART, ball: BALL, stick: STICK, fist: PARTICLE_FIST, star: STAR, bang: BANG };
 const MAX_PARTICLES = 30;
 const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -190,9 +193,9 @@ function SpriteCanvas({ kind, color }) {
   useEffect(() => {
     if (!ref.current) return;
     try {
-      const sprite = kind === 'heart' ? HEART : kind === 'stick' ? STICK : BALL;
+      const sprite = SPRITES[kind] || HEART;
       const ctx = setupCanvas(ref.current, sprite[0].length, sprite.length);
-      drawSprite(ctx, sprite, 0, 0, 1, { k: '#000000', x: color, w: '#ffffff' });
+      drawSprite(ctx, sprite, 0, 0, 1, { k: '#000000', x: color, w: '#ffffff', y: '#ffd23f' });
     } catch (e) {
       console.error('파티클 그리기 실패', e);
     }
@@ -201,7 +204,7 @@ function SpriteCanvas({ kind, color }) {
 }
 
 /** 화면 전체(모바일 폭)에 고정된 파티클 층. 화면 흔들림 박스 밖에 둬야 위치가 흔들리지 않는다. */
-export function CheerParticles({ hit, color }) {
+export function CheerParticles({ hit, color, kinds = CHEER_KINDS, scale = 1, inline = false }) {
   const [items, setItems] = useState([]);
   const idRef = useRef(0);
   const layerRef = useRef(null);
@@ -217,8 +220,8 @@ export function CheerParticles({ hit, color }) {
     const dur = Math.round(rnd(1200, 1800));
     const item = {
       id,
-      kind: CHEER_KINDS[Math.floor(Math.random() * CHEER_KINDS.length)],
-      size: Math.round(rnd(20, 36)),
+      kind: kinds[Math.floor(Math.random() * kinds.length)],
+      size: Math.round(rnd(20, 36) * scale),
       left: rnd(68, 88), // %
       rise: Math.round(h * rnd(0.55, 0.9)), // px
       sway: Math.round(rnd(-1, 1) * Math.max(10, w * 0.03)), // px
@@ -230,7 +233,7 @@ export function CheerParticles({ hit, color }) {
   }, [hit, increased]);
 
   return (
-    <div className="fx-particles" ref={layerRef} aria-hidden="true">
+    <div className={'fx-particles' + (inline ? ' in-overlay' : '')} ref={layerRef} aria-hidden="true">
       {items.map((i) => (
         <span
           key={i.id}

@@ -14,9 +14,13 @@ export function PreviewCheer() {
   const game = GAMES[0];
   const [count, setCount] = useState(0);
   const [opp, setOpp] = useState(0);
+  const auto = new URLSearchParams(window.location.search).has('auto'); // ?auto=1 이면 저절로 응원
 
   useEffect(() => {
-    const t = setInterval(() => setOpp((n) => n + Math.floor(Math.random() * 3)), 300);
+    const t = setInterval(() => {
+      setOpp((n) => n + Math.floor(Math.random() * 3));
+      if (auto) setCount((n) => n + 1);
+    }, 150);
     const key = () => setCount((n) => n + 1);
     window.addEventListener('keydown', key);
     return () => {
@@ -27,7 +31,7 @@ export function PreviewCheer() {
 
   return (
     <div className="screen">
-      <Stadium tint={game.teams.lg.color} />
+      <Stadium tint={game.teams.lg.color} dim={0.06} />
       <h2 className="room-title">LG vs 한화</h2>
       <Cheer
         game={game}
@@ -54,11 +58,13 @@ export function PreviewBattle() {
   const [count, setCount] = useState(0);
   const [opp, setOpp] = useState(0);
   const [now, setNow] = useState(() => serverNow());
+  const auto = new URLSearchParams(window.location.search).has('auto'); // ?auto=1 이면 저절로 연타
 
   useEffect(() => {
     const t = setInterval(() => {
       setNow(serverNow());
       setOpp((n) => n + Math.floor(Math.random() * 3));
+      if (auto) setCount((n) => n + 1);
     }, 100);
     const key = () => setCount((n) => n + 1);
     window.addEventListener('keydown', key);
