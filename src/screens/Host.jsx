@@ -1,138 +1,139 @@
-import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { getGame } from '../data/games.js';
 import {
-  OBJECTION_THRESHOLD,
   OBJECTION_WINDOW_MS,
-  resetBattle,
-  setBattleDuration,
-  startBattle,
-  subscribeBattleDuration,
   useBattlePhase,
+  useCheerScores,
   usePresenceCounts,
   useShakeScores,
 } from '../lib/room.js';
-import { showToast } from '../lib/toast.js';
 import Cutscene from '../pixel/Cutscene.jsx';
+import PushBar from '../pixel/PushBar.jsx';
 import Result from './Result.jsx';
 import './room.css';
 import './battle.css';
 import './host.css';
 
-const DURATION_OPTIONS = [5, 10, 15, 20, 30, 60];
+const safe = (c) => (c === '#131230' ? '#ffffff' : c);
 
+// 전광판(큰 화면, 가로). 보여주기만 하고, 조작은 운영자 화면(/admin/:gameId)에서 한다.
 export default function Host() {
   const { gameId } = useParams();
   const game = getGame(gameId);
-  const counts = usePresenceCounts(gameId);
-  const { phase, battle, now, objectionCount, objectionLeftMs } = useBattlePhase(gameId);
+  const counts = usePresenceCounts(gameId); // 운영자 가감이 반영된 표시 인원
+  const { phase, battle, now, objectionCount, objectionLeftMs, threshold, gameState, runId } =
+    useBattlePhase(gameId);
   const battleId = battle && battle.state === 'cutscene' ? battle.id : null;
   const { totals, list } = useShakeScores(gameId, battleId);
-  const [battleMs, setBattleMs] = useState(10000);
-
-  useEffect(() => subscribeBattleDuration(gameId, setBattleMs), [gameId]);
+  const { totals: cheer } = useCheerScores(gameId, runId);
 
   if (!game) return <div className="screen wide">없는 경기입니다</div>;
 
-  const run = (fn, msg) => fn().catch((e) => {
-    console.error(msg, e);
-    showToast(msg);
-  });
-
   const joinUrl = `${window.location.origin}/game/${gameId}`;
-  const ids = Object.keys(game.teams);
-  const [aId, bId] = ids;
-  const a = totals[aId] || 0;
-  const b = totals[bId] || 0;
-  const ratio = a + b === 0 ? 50 : (a / (a + b)) * 100;
-  const secLeft = (ms) => Math.max(0, Math.ceil(ms / 1000));
+  const [aId, bId] = Object.keys(game.teams);
+  const A = game.teams[aId];
+  const B = game.teams[bId];
+  const sec = (ms) => Math.max(0, Math.ceil(ms / 1000));
+  const live = gameState === 'live';
+
+  const cheerA = cheer[aId] || 0;
+  const cheerB = cheer[bId] || 0;
+  const winner = cheerA === cheerB ? null : cheerA > cheerB ? A : B;
+
+  const qr = (size) => (
+    <div className="qr-box">
+      <QRCodeSVG value={joinUrl} size={size} bgColor="#ffffff" fgColor="#1a1c2c" />
+      <p>QR 찍고 참전하기</p>
+      <small>{joinUrl}</small>
+    </div>
+  );
 
   return (
     <div className="screen wide host">
       <header className="host-head">
-        <h1>{ids.map((id) => game.teams[id].name).join(' vs ')}</h1>
+        <h1>{A.name} vs {B.name}</h1>
         <div className="host-presence">
-          {ids.map((id) => (
-            <span key={id} style={{ background: game.teams[id].color }}>
-              {game.teams[id].name} {counts[id] || 0}명
-            </span>
-          ))}
+          <span style={{ background: A.color }}>A {A.name} {counts[aId] || 0}명</span>
+          <span style={{ background: B.color }}>B {B.name} {counts[bId] || 0}명</span>
         </div>
       </header>
 
-      {phase === 'idle' && (
+      {gameState === 'wait' && (
         <div className="host-idle">
-          <div className="qr-box">
-            <QRCodeSVG value={joinUrl} size={320} bgColor="#ffffff" fgColor="#1a1c2c" />
-            <p>QR 찍고 참전하기</p>
-            <small>{joinUrl}</small>
-          </div>
+          {qr(320)}
           <div className="host-side">
-            <p className="host-gauge">
-              이의 있음 {Math.min(objectionCount, OBJECTION_THRESHOLD)} / {OBJECTION_THRESHOLD}
-            </p>
-            <div className="timebar">
-              <div
-                className="timebar-fill"
-                style={{ width: `${(objectionLeftMs / OBJECTION_WINDOW_MS) * 100}%` }}
-              />
-            </div>
-            <button
-              className="px-btn host-btn"
-              onClick={() => run(() => startBattle(gameId), '시작 실패')}
-            >
-              강제 판정 시작
-            </button>
-            <label className="duration">
-              배틀 시간
-              <select
-                value={Math.round(battleMs / 1000)}
-                onChange={(e) =>
-                  run(() => setBattleDuration(gameId, Number(e.target.value) * 1000), '설정 실패')
-                }
-              >
-                {DURATION_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s}초
-                  </option>
-                ))}
-              </select>
-            </label>
+            <p className="host-gauge">곧 시작합니다</p>
+            <p>QR을 찍고 팀을 고르세요</p>
           </div>
         </div>
       )}
 
-      {phase === 'cutscene' && (
+      {live && phase === 'idle' && (
+        <div className="host-cheer">
+          <div className="host-badge">응원 중</div>
+          <PushBar scoreA={cheerA} scoreB={cheerB} colorA={A.color} colorB={B.color} height={72} />
+          <div className="host-totals">
+            <span style={{ color: safe(A.color) }}>A {A.name} {cheerA}</span>
+            <span style={{ color: safe(B.color) }}>{cheerB} {B.name} B</span>
+          </div>
+          <div className="host-bottom">
+            <div>
+              <p className="host-gauge">
+                이의 있음 {Math.min(objectionCount, threshold)} / {threshold}
+              </p>
+              <div className="timebar">
+                <div
+                  className="timebar-fill"
+                  style={{ width: `${(objectionLeftMs / OBJECTION_WINDOW_MS) * 100}%` }}
+                />
+              </div>
+            </div>
+            {qr(160)}
+          </div>
+        </div>
+      )}
+
+      {live && phase === 'cutscene' && (
         <Cutscene game={game} team={aId} battle={battle} fullscreen={false} />
       )}
 
-      {phase === 'battle' && (
+      {live && phase === 'battle' && (
         <div className="host-battle">
-          <div className="host-timer">{secLeft(battle.endAt - now)}</div>
-          <div className="tug big-tug">
-            <div className="tug-mine" style={{ width: `${ratio}%`, background: game.teams[aId].color }} />
-            <div className="tug-opp" style={{ background: game.teams[bId].color }} />
-          </div>
+          <div className="host-timer">{sec(battle.endAt - now)}</div>
+          <PushBar
+            scoreA={totals[aId] || 0}
+            scoreB={totals[bId] || 0}
+            colorA={A.color}
+            colorB={B.color}
+            height={72}
+          />
           <div className="host-totals">
-            <span>{game.teams[aId].name} {a}</span>
-            <span>{b} {game.teams[bId].name}</span>
+            <span style={{ color: safe(A.color) }}>A {A.name} {totals[aId] || 0}</span>
+            <span style={{ color: safe(B.color) }}>{totals[bId] || 0} {B.name} B</span>
           </div>
         </div>
       )}
 
-      {phase === 'result' && (
+      {live && phase === 'result' && (
         <div className="host-result">
           <Result game={game} team={null} battle={battle} now={now} totals={totals} list={list} myCount={0} />
-          <button
-            className="px-btn host-btn"
-            onClick={() => run(() => resetBattle(gameId, battle.id), '리셋 실패')}
-          >
-            다음 판정
-          </button>
         </div>
       )}
 
+      {gameState === 'end' && (
+        <div className="host-battle">
+          <div className="host-badge">경기 종료</div>
+          <p className="host-gauge">
+            {winner ? `${winner.name} 팬 승리!` : '무승부'}
+          </p>
+          <PushBar scoreA={cheerA} scoreB={cheerB} colorA={A.color} colorB={B.color} height={72} />
+          <div className="host-totals">
+            <span style={{ color: safe(A.color) }}>A {A.name} {cheerA}</span>
+            <span style={{ color: safe(B.color) }}>{cheerB} {B.name} B</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

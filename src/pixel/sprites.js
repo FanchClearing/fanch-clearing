@@ -42,3 +42,23 @@ export const BALL = [
   'wrwww',
   '.www.',
 ];
+
+// 응원 파티클용: 하트(r = 팀 컬러), 응원봉(y = 팀 컬러, k = 손잡이)
+export const HEART = [
+  '.rr.rr.',
+  'rrrrrrr',
+  'rrrrrrr',
+  '.rrrrr.',
+  '..rrr..',
+  '...r...',
+];
+
+export const STICK = [
+  '..y..',
+  '.yyy.',
+  '.yyy.',
+  '.yyy.',
+  '..k..',
+  '..k..',
+  '..k..',
+];

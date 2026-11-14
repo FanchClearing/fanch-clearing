@@ -5,7 +5,8 @@ import GameSelect from './screens/GameSelect.jsx';
 import TeamSelect from './screens/TeamSelect.jsx';
 import Room from './screens/Room.jsx';
 import Host from './screens/Host.jsx';
-import Preview, { PreviewBattle } from './screens/Preview.jsx';
+import Admin from './screens/Admin.jsx';
+import Preview, { PreviewBattle, PreviewCheer } from './screens/Preview.jsx';
 import ToastHost from './pixel/Toast.jsx';
 
 export default function App() {
@@ -19,10 +20,12 @@ export default function App() {
       <Route path="/game/:gameId" element={<TeamSelect />} />
       <Route path="/room/:gameId" element={<Room />} />
       <Route path="/host/:gameId" element={<Host />} />
+      <Route path="/admin/:gameId" element={<Admin />} />
       {import.meta.env.DEV && (
         <>
           <Route path="/preview/cutscene/:teamId?" element={<Preview />} />
           <Route path="/preview/battle" element={<PreviewBattle />} />
+          <Route path="/preview/cheer" element={<PreviewCheer />} />
         </>
       )}
       <Route path="*" element={<Home />} />

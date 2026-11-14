@@ -52,3 +52,15 @@
   image-rendering: pixelated;
   pointer-events: none;
 }
+
+/* 응원 파티클 */
+.fx-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
+.fx-pt { position: absolute; bottom: 2%; animation: fx-rise var(--t) steps(14) forwards; }
+.fx-pt-canvas { width: 100%; display: block; image-rendering: pixelated; }
+@keyframes fx-rise {
+  0% { transform: translate(0, 0) scale(0.4); opacity: 1; }
+  25% { transform: translate(var(--sw), -70px) scale(1); }
+  50% { transform: translate(calc(var(--sw) * -1), -150px); }
+  75% { transform: translate(var(--sw), -230px); opacity: 1; }
+  100% { transform: translate(0, -300px); opacity: 0; }
+}

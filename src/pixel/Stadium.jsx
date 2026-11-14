@@ -66,7 +66,7 @@ export function drawStadium(ctx) {
 }
 
 /** 화면 뒤에 깔리는 배경. 위에 반투명 어둠막을 얹어 글자가 읽히게 한다. */
-export default function Stadium({ dim = 0.35 }) {
+export default function Stadium({ dim = 0.35, tint = null }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -82,6 +82,7 @@ export default function Stadium({ dim = 0.35 }) {
     <div className="stadium-wrap" aria-hidden="true">
       <canvas ref={ref} className="stadium-canvas" />
       <div className="stadium-dim" style={{ background: `rgba(26, 28, 44, ${dim})` }} />
+      {tint && <div className="stadium-dim" style={{ background: tint, opacity: 0.22 }} />}
     </div>
   );
 }

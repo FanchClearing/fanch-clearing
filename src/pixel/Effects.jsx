@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { drawSprite, rect, seededRandom, setupCanvas } from './draw.js';
+import { BALL, HEART, STICK } from './sprites.js';
 import './effects.css';
 
 const HIT_WORDS = ['퍽!', '쾅!', '이의!', '오심!'];
@@ -16,15 +17,15 @@ function useIncrease(hit) {
 }
 
 /** 흔들기 1회마다 150ms 화면 흔들림 (CSS 변수로 랜덤 방향) */
-export function ShakeBox({ hit, children, className = '' }) {
+export function ShakeBox({ hit, children, className = '', amp = 8 }) {
   const ref = useRef(null);
   const increased = useIncrease(hit);
 
   useEffect(() => {
     const el = ref.current;
     if (!el || !increased) return;
-    el.style.setProperty('--sx', `${Math.round((Math.random() * 2 - 1) * 8)}px`);
-    el.style.setProperty('--sy', `${Math.round((Math.random() * 2 - 1) * 8)}px`);
+    el.style.setProperty('--sx', `${Math.round((Math.random() * 2 - 1) * amp)}px`);
+    el.style.setProperty('--sy', `${Math.round((Math.random() * 2 - 1) * amp)}px`);
     el.classList.remove('fx-shake');
     void el.offsetWidth; // 애니메이션 재시작
     el.classList.add('fx-shake');
@@ -164,4 +165,64 @@ export function OpponentCrowd({ color }) {
     }
   }, [color]);
   return <canvas ref={ref} className="fx-crowd" />;
+}
+
+// ------------------------------------------------------------- 응원 파티클
+// 흔들 때마다 오른쪽 아래에서 1개가 떠올라 좌우로 흔들리며 사라진다 (인스타 라이브 하트).
+// 동시에 최대 30개까지만 유지한다.
+
+const CHEER_KINDS = ['heart', 'ball', 'stick'];
+const MAX_PARTICLES = 30;
+
+function SpriteCanvas({ kind, color }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current) return;
+    try {
+      const sprite = kind === 'heart' ? HEART : kind === 'stick' ? STICK : BALL;
+      const ctx = setupCanvas(ref.current, sprite[0].length, sprite.length);
+      drawSprite(ctx, sprite, 0, 0, 1, { r: color, y: color, k: '#1a1c2c', w: '#f4f4f4' });
+    } catch (e) {
+      console.error('파티클 그리기 실패', e);
+    }
+  }, [kind, color]);
+  return <canvas ref={ref} className="fx-pt-canvas" />;
+}
+
+export function CheerParticles({ hit, color }) {
+  const [items, setItems] = useState([]);
+  const idRef = useRef(0);
+  const increased = useIncrease(hit);
+
+  useEffect(() => {
+    if (!increased) return;
+    idRef.current += 1;
+    const id = idRef.current;
+    const dur = 1200 + Math.floor(Math.random() * 600); // 1.2~1.8초
+    const item = {
+      id,
+      kind: CHEER_KINDS[Math.floor(Math.random() * CHEER_KINDS.length)],
+      size: 16 + Math.floor(Math.random() * 3) * 8, // 16~32px
+      right: 4 + Math.random() * 14, // %
+      sway: 8 + Math.random() * 18, // px
+      dur,
+    };
+    setItems((list) => [...list.slice(-(MAX_PARTICLES - 1)), item]);
+    // 취소하지 않는다 (리렌더로 deps가 바뀌어도 끝나면 반드시 제거)
+    setTimeout(() => setItems((list) => list.filter((i) => i.id !== id)), dur);
+  }, [hit, increased]);
+
+  return (
+    <div className="fx-particles" aria-hidden="true">
+      {items.map((i) => (
+        <span
+          key={i.id}
+          className="fx-pt"
+          style={{ right: `${i.right}%`, width: i.size, '--sw': `${i.sway}px`, '--t': `${i.dur}ms` }}
+        >
+          <SpriteCanvas kind={i.kind} color={color} />
+        </span>
+      ))}
+    </div>
+  );
 }
