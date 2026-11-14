@@ -15,6 +15,7 @@ import {
   usePresenceCounts,
   useShakeScores,
 } from '../lib/room.js';
+import Stadium from '../pixel/Stadium.jsx';
 import Battle from './Battle.jsx';
 import Result from './Result.jsx';
 import './room.css';
@@ -124,6 +125,7 @@ export default function Room() {
 
   return (
     <div className="screen">
+      <Stadium />
       <h2 className="room-title">{entries.map(([, t]) => t.name).join(' vs ')}</h2>
       <div className="presence">
         {entries.map(([id, t]) => (
